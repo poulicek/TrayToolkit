@@ -1,0 +1,11 @@
+*.dll
+*.pdb
+*.vs
+*.suo
+bin
+obj
+Debug
+Release
+Source/BrightnessControl.csproj.user
+Source/KeyboardLocker/KeyboardLocker.csproj.user
+*.user
