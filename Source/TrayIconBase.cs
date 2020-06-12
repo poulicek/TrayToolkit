@@ -43,6 +43,15 @@ namespace TrayToolkit
 
 
         /// <summary>
+        /// Sets the icon title
+        /// </summary>
+        protected void setTitle(string title)
+        {
+            this.Text = this.trayIcon.Text = title;
+        }
+
+
+        /// <summary>
         /// Creates a tray icon
         /// </summary>
         private NotifyIcon createTrayIcon()
