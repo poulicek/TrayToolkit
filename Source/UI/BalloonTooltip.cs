@@ -186,15 +186,6 @@ namespace TrayToolkit.UI
 
 
         /// <summary>
-        /// Initializes the tooltip activation by showing an empty balloon once
-        /// </summary>
-        public static void InitActivation()
-        {
-            tooltip.ShowUnfocused();
-        }
-
-
-        /// <summary>
         /// Resets the timer
         /// </summary>
         private static void resetTimer(int timeout = 0)
@@ -210,9 +201,32 @@ namespace TrayToolkit.UI
 
 
         /// <summary>
+        /// Initializes the tooltip activation by showing an empty balloon once
+        /// </summary>
+        public static void InitActivation()
+        {
+            tooltip.ShowUnfocused();
+        }
+
+
+        /// <summary>
+        /// Shows the notification for period when the worker is running
+        /// </summary>
+        public static void Show(string message, Bitmap icon, Action worker)
+        {
+            try
+            {
+                Show(message, icon);
+                worker?.Invoke();
+            }
+            finally { Hide(); }
+        }
+
+
+        /// <summary>
         /// Shows the notification
         /// </summary>
-        public static void Show(Bitmap icon, string message, string note = null, int timeout = 0)
+        public static void Show(string message, Bitmap icon = null, string note = null, int timeout = 0)
         {
             resetTimer(timeout);
 
