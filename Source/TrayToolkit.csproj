@@ -48,9 +48,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ProgramBase.cs" />
+    <Compile Include="Helpers\IconHelper.cs" />
+    <Compile Include="CodeSamples\ProgramBase.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="TrayIconBase.cs">
+    <Compile Include="Helpers\ResourceHelper.cs" />
+    <Compile Include="UI\BalloonTooltip.cs" />
+    <Compile Include="UI\TrayIconBase.cs">
       <SubType>Form</SubType>
     </Compile>
   </ItemGroup>

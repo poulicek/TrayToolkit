@@ -2,14 +2,13 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
-using System.IO;
-using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using Microsoft.Win32;
+using TrayToolkit.Helpers;
 
-namespace TrayToolkit
+namespace TrayToolkit.UI
 {
     public abstract class TrayIconBase : Form
     {
@@ -18,6 +17,7 @@ namespace TrayToolkit
 
         protected NotifyIcon trayIcon;
         private readonly string aboutUrl;
+
 
         protected TrayIconBase(string title, string aboutUrl = null)
         {
@@ -37,17 +37,10 @@ namespace TrayToolkit
             this.trayIcon = this.createTrayIcon();
             this.createContextMenu();
             this.updateLook();
-        }
 
-        protected abstract void onTrayIconClick(object sender, MouseEventArgs e);
-
-
-        /// <summary>
-        /// Sets the icon title
-        /// </summary>
-        protected void setTitle(string title)
-        {
-            this.Text = this.trayIcon.Text = title;
+            SystemEvents.PaletteChanged += this.onDisplaySettingsChanged;
+            SystemEvents.DisplaySettingsChanged += this.onDisplaySettingsChanged;
+            SystemEvents.UserPreferenceChanging += this.onDisplaySettingsChanged;
         }
 
 
@@ -67,81 +60,7 @@ namespace TrayToolkit
         }
 
 
-        /// <summary>
-        /// Returns the embedded image instance
-        /// </summary>
-        protected Bitmap getResourceImage(string imagePath)
-        {
-            using (var s = this.getResourceStream(imagePath))
-                return s == null ? null : new Bitmap(s);
-        }
-
-
-        /// <summary>
-        /// Returns the embedded resource stream
-        /// </summary>
-        protected Stream getResourceStream(string path)
-        {
-            return Assembly.GetEntryAssembly().GetManifestResourceStream($"{this.GetType().Namespace.Split('.')[0]}.{path}");
-        }
-
-
-        /// <summary>
-        /// Returns the icon from the resource
-        /// </summary>
-        private Icon getIcon()
-        {
-            var lightMode = Registry.CurrentUser.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize", true)?.GetValue("SystemUsesLightTheme") as int? == 1;
-            var resourceName = this.getIconName(lightMode);
-            if (string.IsNullOrEmpty(resourceName))
-                return null;
-
-            using (var bmp = getResourceImage(resourceName))
-                return this.getIconFromBitmap(bmp);
-        }
-
-
-        /// <summary>
-        /// Converts the given bitmap to an icon
-        /// </summary>
-        protected virtual Icon getIconFromBitmap(Bitmap bmp)
-        {
-            return Icon.FromHandle(bmp.GetHicon());
-        }
-
-
-        /// <summary>
-        /// Updates the look
-        /// </summary>
-        protected virtual void updateLook()
-        {
-            this.trayIcon.Icon = this.getIcon();
-        }
-
-        protected abstract string getIconName(bool lightMode);
-
-
-        protected virtual List<MenuItem> getMenuItems()
-        {
-            var items = new List<MenuItem>();
-            items.Add(new MenuItem("Start with Windows", this.onStartUpClick) { Checked = this.startsWithWindows() });
-
-            if (!string.IsNullOrEmpty(this.aboutUrl))
-                items.Add(new MenuItem("About...", this.onAboutClick));
-            items.Add(new MenuItem("-"));
-            items.Add(new MenuItem("Exit", this.onMenuExitClick));
-
-            return items;
-        }
-
-
-        /// <summary>
-        /// Creates the context menu
-        /// </summary>
-        protected void createContextMenu()
-        {
-            this.trayIcon.ContextMenu = new ContextMenu(this.getMenuItems().ToArray());
-        }
+        protected abstract void onTrayIconClick(object sender, MouseEventArgs e);
 
 
         async private void onDisplaySettingsChanged(object sender, EventArgs e)
@@ -153,6 +72,84 @@ namespace TrayToolkit
 
             await Task.Delay(1000);
             this.updateLook();
+        }
+
+
+        /// <summary>
+        /// Updates the look
+        /// </summary>
+        protected virtual void updateLook()
+        {
+            this.trayIcon.Icon = this.getIcon();
+        }
+
+
+        /// <summary>
+        /// Returns true if Windows is in a light mode
+        /// </summary>
+        protected bool isWindowsInLightMode()
+        {
+            return Registry.CurrentUser.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize", true)?.GetValue("SystemUsesLightTheme") as int? == 1;
+        }
+
+
+        /// <summary>
+        /// Sets the icon title
+        /// </summary>
+        protected void setTitle(string title)
+        {
+            this.Text = this.trayIcon.Text = title;
+        }
+
+
+        protected abstract string getIconName(bool lightMode);
+
+
+        /// <summary>
+        /// Converts the given bitmap to an icon
+        /// </summary>
+        protected virtual Icon getIconFromBitmap(Bitmap bmp)
+        {
+            return IconHelper.GetIcon(bmp);
+        }
+
+
+        /// <summary>
+        /// Returns the icon from the resource
+        /// </summary>
+        private Icon getIcon()
+        {
+            var resourceName = this.getIconName(this.isWindowsInLightMode());
+            if (string.IsNullOrEmpty(resourceName))
+                return null;
+
+            using (var bmp = ResourceHelper.GetResourceImage(resourceName))
+                return this.getIconFromBitmap(bmp);
+        }
+
+
+        #region Context Menu
+
+        /// <summary>
+        /// Creates the context menu
+        /// </summary>
+        protected void createContextMenu()
+        {
+            this.trayIcon.ContextMenu = new ContextMenu(this.getContextMenuItems().ToArray());
+        }
+
+
+        protected virtual List<MenuItem> getContextMenuItems()
+        {
+            var items = new List<MenuItem>();
+            items.Add(new MenuItem("Start with Windows", this.onStartUpClick) { Checked = this.startsWithWindows() });
+
+            if (!string.IsNullOrEmpty(this.aboutUrl))
+                items.Add(new MenuItem("About...", this.onAboutClick));
+            items.Add(new MenuItem("-"));
+            items.Add(new MenuItem("Exit", this.onMenuExitClick));
+
+            return items;
         }
 
 
@@ -204,6 +201,17 @@ namespace TrayToolkit
         protected virtual void onMenuExitClick(object sender, EventArgs e)
         {
             Application.Exit();
+        }
+
+        #endregion
+
+        protected override void Dispose(bool disposing)
+        {
+            SystemEvents.PaletteChanged -= this.onDisplaySettingsChanged;
+            SystemEvents.DisplaySettingsChanged -= this.onDisplaySettingsChanged;
+            SystemEvents.UserPreferenceChanging -= this.onDisplaySettingsChanged;
+
+            base.Dispose(disposing);
         }
     }
 }
