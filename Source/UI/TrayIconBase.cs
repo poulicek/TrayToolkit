@@ -194,7 +194,8 @@ namespace TrayToolkit.UI
 
         protected virtual void onAboutClick(object sender, EventArgs e)
         {
-            Process.Start(new ProcessStartInfo(this.aboutUrl));
+            using (var dlg = new AboutDialog(this.aboutUrl))
+                dlg.ShowDialog();
         }
 
 
