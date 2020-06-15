@@ -80,7 +80,8 @@ namespace TrayToolkit.UI
         /// </summary>
         protected virtual void updateLook()
         {
-            this.trayIcon.Icon = this.getIcon();
+            this.trayIcon.Icon?.Dispose();
+            this.trayIcon.Icon = this.getIconFromResource();
         }
 
 
@@ -117,7 +118,7 @@ namespace TrayToolkit.UI
         /// <summary>
         /// Returns the icon from the resource
         /// </summary>
-        private Icon getIcon()
+        private Icon getIconFromResource()
         {
             var resourceName = this.getIconName(this.isWindowsInLightMode());
             if (string.IsNullOrEmpty(resourceName))
