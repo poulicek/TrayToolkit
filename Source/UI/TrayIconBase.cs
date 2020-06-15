@@ -98,7 +98,7 @@ namespace TrayToolkit.UI
         /// </summary>
         protected void setTitle(string title)
         {
-            this.Text = this.trayIcon.Text = title;
+            this.BeginInvoke((Action)delegate() { this.Text = this.trayIcon.Text = title; });
         }
 
 
