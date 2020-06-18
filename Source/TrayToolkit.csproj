@@ -35,8 +35,10 @@
     <StartupObject />
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Microsoft.VisualBasic.Compatibility.Data" />
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Management" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -49,9 +51,17 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Helpers\IconHelper.cs" />
-    <Compile Include="CodeSamples\ProgramBase.cs" />
+    <Compile Include="Helpers\ThreadingHelper.cs" />
+    <Compile Include="OS\Interops\Dxva2.cs" />
+    <Compile Include="OS\Interops\User32.cs" />
+    <Compile Include="OS\Screen\ScreenContoller.cs" />
+    <Compile Include="OS\Screen\Driver\MonitorsCollector.cs" />
+    <Compile Include="OS\Screen\Driver\WMI.cs" />
+    <Compile Include="Snippets\ProgramBase.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Helpers\ResourceHelper.cs" />
+    <Compile Include="OS\Input\ActionKey.cs" />
+    <Compile Include="OS\Input\InputListener.cs" />
     <Compile Include="UI\AboutDialog.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -68,5 +78,6 @@
       <DependentUpon>AboutDialog.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

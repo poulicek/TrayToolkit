@@ -2,7 +2,7 @@
 using System.Reflection;
 using System.Threading;
 
-namespace TrayToolkit.CodeSamples
+namespace TrayToolkit.Snippets
 {
     static class Program
     {
