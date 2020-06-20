@@ -117,10 +117,9 @@ namespace TrayToolkit.UI
         private Icon getIcon()
         {
             var resourceName = this.getIconName(this.isWindowsInLightMode());
-            if (string.IsNullOrEmpty(resourceName))
-                return null;
-
-            using (var bmp = ResourceHelper.GetResourceImage(resourceName))
+            using (var bmp = string.IsNullOrEmpty(resourceName)
+                ? ResourceHelper.GetResourceImage("Resources.DefaultIconLight.png", Assembly.GetExecutingAssembly())
+                : ResourceHelper.GetResourceImage(resourceName))
                 return this.getIconFromBitmap(bmp);
         }
 
@@ -136,7 +135,7 @@ namespace TrayToolkit.UI
         /// </summary>
         protected virtual Icon getIconFromBitmap(Bitmap bmp)
         {
-            return IconHelper.GetIcon(bmp);
+            return bmp == null ? null : IconHelper.GetIcon(bmp);
         }
 
 
@@ -179,7 +178,8 @@ namespace TrayToolkit.UI
 
                 using (var stream = new FileStream(dlg.FileName, FileMode.Create))
                 using (var icon = this.getIcon())
-                    icon.Save(stream);
+                    if (icon != null)
+                        icon.Save(stream);
             }
         }
 
