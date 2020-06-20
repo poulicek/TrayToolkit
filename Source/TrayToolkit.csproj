@@ -73,5 +73,8 @@
   <ItemGroup>
     <EmbeddedResource Include="Resources\DefaultIconLight.png" />
   </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\DefaultIconDark.png" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
