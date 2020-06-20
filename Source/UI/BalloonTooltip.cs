@@ -2,8 +2,8 @@
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Drawing.Text;
-using System.Runtime.InteropServices;
 using System.Windows.Forms;
+using TrayToolkit.Helpers;
 
 namespace TrayToolkit.UI
 {
@@ -13,19 +13,6 @@ namespace TrayToolkit.UI
 
         private class BalloonControl : Form
         {
-            #region P/Invoke
-
-            private const int SW_SHOWNOACTIVATE = 4;
-            private const uint SWP_NOACTIVATE = 0x10;
-
-            [DllImport("user32.dll", EntryPoint = "SetWindowPos")]
-            private static extern bool SetWindowPos(int hWnd, int hWndInsertAfter, int X, int Y, int cx, int cy, uint uFlags);
-            [DllImport("user32.dll")]
-            private static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
-
-
-            #endregion
-
             public new Bitmap Icon { get; set; }
             public string Message { get; set; }
             public string Note { get; set; }
@@ -43,6 +30,7 @@ namespace TrayToolkit.UI
                 this.AutoScaleDimensions = new SizeF(96F, 96F);
                 this.AutoScaleMode = AutoScaleMode.Dpi;
             }
+
 
             protected override void OnPaintBackground(PaintEventArgs e)
             {
@@ -74,16 +62,13 @@ namespace TrayToolkit.UI
             /// <summary>
             /// Shows the unfocused contorl
             /// </summary>
-            public void ShowUnfocused()
+            public void ShowInCorner()
             {
-                var loc = this.getCornerLocation();
-                SetWindowPos(this.Handle.ToInt32(), 0, loc.X, loc.Y, this.Width, this.Height, SWP_NOACTIVATE);
-                ShowWindow(this.Handle, SW_SHOWNOACTIVATE);
-                this.Invalidate();
+                this.Location = this.getCornerLocation();
+                this.ShowUnfocused();
             }
 
             #region Look
-
 
             /// <summary>
             /// Draws the contents
@@ -110,8 +95,7 @@ namespace TrayToolkit.UI
                 rect.X += margin;
                 rect.Width -= margin;
 
-                g.TextRenderingHint = TextRenderingHint.AntiAliasGridFit;
-                g.SmoothingMode = SmoothingMode.HighQuality;
+                g.SetHighQuality();
 
                 if (string.IsNullOrEmpty(this.Note))
                 {
@@ -127,14 +111,14 @@ namespace TrayToolkit.UI
                     using (var f = new Font("Segoe UI", 11, FontStyle.Bold, GraphicsUnit.Point))
                     using (var sf = new StringFormat() { LineAlignment = StringAlignment.Near })
                     {
-                        g.DrawString(this.Message, f, Brushes.White, new Rectangle(rect.X, rect.Y, rect.Width, 2 * rect.Height / 3), sf);
+                        g.DrawString(this.Message, f, Brushes.White, new Rectangle(rect.X, rect.Y, rect.Width, rect.Height), sf);
                         this.ensureSize(g, this.Message, f, rect);
                     }
 
                     using (var f = new Font("Segoe UI", 9, GraphicsUnit.Point))
                     using (var sf = new StringFormat() { LineAlignment = StringAlignment.Far })
                     {
-                        g.DrawString(this.Note, f, Brushes.White, new Rectangle(rect.X, rect.Y + 2 * rect.Height / 3, rect.Width, rect.Height / 3), sf);
+                        g.DrawString(this.Note, f, Brushes.White, new Rectangle(rect.X, rect.Y, rect.Width, rect.Height), sf);
                         this.ensureSize(g, this.Note, f, rect);
                     }
                 }
@@ -148,7 +132,7 @@ namespace TrayToolkit.UI
                 if (s.Width > rect.Width)
                 {
                     this.Width += ((int)Math.Ceiling(s.Width) - rect.Width);
-                    this.ShowUnfocused();
+                    this.ShowInCorner();
                 }
             }
 
@@ -205,7 +189,7 @@ namespace TrayToolkit.UI
         /// </summary>
         public static void InitActivation()
         {
-            tooltip.ShowUnfocused();
+            tooltip.ShowInCorner();
         }
 
 
@@ -230,10 +214,26 @@ namespace TrayToolkit.UI
         {
             resetTimer(timeout);
 
+            tooltip.LostFocus -= onLostFocus;
             tooltip.Icon = icon;
             tooltip.Message = message;
             tooltip.Note = note;
-            tooltip.ShowUnfocused();
+            tooltip.ShowInCorner();
+
+            if (timeout == 0)
+            {
+                tooltip.Focus();
+                tooltip.LostFocus += onLostFocus;
+            }
+        }
+
+        /// <summary>
+        /// Handles the focus lost event
+        /// </summary>
+        private static void onLostFocus(object sender, EventArgs e)
+        {
+            if (!timer.Enabled)
+                Hide();
         }
 
 
@@ -243,6 +243,7 @@ namespace TrayToolkit.UI
         public static void Hide()
         {
             resetTimer();
+            tooltip.LostFocus -= onLostFocus;
             tooltip.Hide();
         }
 

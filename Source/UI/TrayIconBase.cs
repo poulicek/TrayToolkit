@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
+using System.IO;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -16,6 +18,7 @@ namespace TrayToolkit.UI
         private static extern int SetProcessDPIAware();
 
         protected NotifyIcon trayIcon;
+        private bool redrawRequested;
         private readonly string aboutUrl;
 
 
@@ -65,13 +68,13 @@ namespace TrayToolkit.UI
 
         async private void onDisplaySettingsChanged(object sender, EventArgs e)
         {
-            SetProcessDPIAware();
+            if (this.redrawRequested)
+                return;
 
-            await Task.Delay(500);
+            this.redrawRequested = true;
+            await Task.Delay(200);
             this.updateLook();
-
-            await Task.Delay(1000);
-            this.updateLook();
+            this.redrawRequested = false;
         }
 
 
@@ -80,8 +83,10 @@ namespace TrayToolkit.UI
         /// </summary>
         protected virtual void updateLook()
         {
-            this.trayIcon.Icon?.Dispose();
-            this.trayIcon.Icon = this.getIconFromResource();
+            SetProcessDPIAware();
+            var oldIcon = this.trayIcon.Icon;
+            this.trayIcon.Icon = this.getIcon();
+            oldIcon?.Dispose();
         }
 
 
@@ -99,10 +104,30 @@ namespace TrayToolkit.UI
         /// </summary>
         protected void setTitle(string title)
         {
-            this.BeginInvoke((Action)delegate() { this.Text = this.trayIcon.Text = title; });
+            if (this.InvokeRequired)
+                this.BeginInvoke((Action)delegate () { this.Text = this.trayIcon.Text = title; });
+            else
+                this.Text = this.trayIcon.Text = title;
         }
 
 
+        /// <summary>
+        /// Returns the icon from the resource
+        /// </summary>
+        private Icon getIcon()
+        {
+            var resourceName = this.getIconName(this.isWindowsInLightMode());
+            if (string.IsNullOrEmpty(resourceName))
+                return null;
+
+            using (var bmp = ResourceHelper.GetResourceImage(resourceName))
+                return this.getIconFromBitmap(bmp);
+        }
+
+
+        /// <summary>
+        /// Returns the resource name of the icon file
+        /// </summary>
         protected abstract string getIconName(bool lightMode);
 
 
@@ -112,20 +137,6 @@ namespace TrayToolkit.UI
         protected virtual Icon getIconFromBitmap(Bitmap bmp)
         {
             return IconHelper.GetIcon(bmp);
-        }
-
-
-        /// <summary>
-        /// Returns the icon from the resource
-        /// </summary>
-        private Icon getIconFromResource()
-        {
-            var resourceName = this.getIconName(this.isWindowsInLightMode());
-            if (string.IsNullOrEmpty(resourceName))
-                return null;
-
-            using (var bmp = ResourceHelper.GetResourceImage(resourceName))
-                return this.getIconFromBitmap(bmp);
         }
 
 
@@ -145,12 +156,31 @@ namespace TrayToolkit.UI
             var items = new List<MenuItem>();
             items.Add(new MenuItem("Start with Windows", this.onStartUpClick) { Checked = this.startsWithWindows() });
 
-            if (!string.IsNullOrEmpty(this.aboutUrl))
-                items.Add(new MenuItem("About...", this.onAboutClick));
+#if DEBUG
+            items.Add(new MenuItem("Save icon...", this.onSaveIconClick));
+#endif
+            items.Add(new MenuItem("About...", this.onAboutClick));
             items.Add(new MenuItem("-"));
             items.Add(new MenuItem("Exit", this.onMenuExitClick));
 
             return items;
+        }
+
+
+        /// <summary>
+        /// Saves the current icon
+        /// </summary>
+        private void onSaveIconClick(object sender, EventArgs e)
+        {
+            using (var dlg = new SaveFileDialog() { InitialDirectory = FileSystemHelper.AppFolder, FileName = "TrayIcon.ico", Filter = "Icon Files | *.ico", AddExtension = true, DefaultExt = ".ico" })
+            {
+                if (dlg.ShowDialog() != DialogResult.OK)
+                    return;
+
+                using (var stream = new FileStream(dlg.FileName, FileMode.Create))
+                using (var icon = this.getIcon())
+                    icon.Save(stream);
+            }
         }
 
 
@@ -195,8 +225,8 @@ namespace TrayToolkit.UI
 
         protected virtual void onAboutClick(object sender, EventArgs e)
         {
-            using (var dlg = new AboutDialog(this.aboutUrl))
-                dlg.ShowDialog();
+            var fvi = FileVersionInfo.GetVersionInfo(Assembly.GetEntryAssembly().Location);
+            BalloonTooltip.Show(fvi.ProductName, null, $"{fvi.ProductVersion}{Environment.NewLine}{this.aboutUrl} ");
         }
 
 

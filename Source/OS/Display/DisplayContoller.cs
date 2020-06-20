@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using TrayToolkit.Helpers;
-using TrayToolkit.IO.Screen.Driver;
+using TrayToolkit.IO.Display.Driver;
 using TrayToolkit.OS.Interops;
 
-namespace TrayToolkit.IO.Screen
+namespace TrayToolkit.IO.Display
 {
-    public class Brightness : IDisposable
+    public class DisplayContoller : IDisposable
     {
         public struct BrightnessInfo
         {
@@ -33,7 +33,7 @@ namespace TrayToolkit.IO.Screen
 
 
 
-        public Brightness()
+        public DisplayContoller()
         {
             this.wmiDriver.BrightnessChanged += (level) => this.BrightnessChanged?.Invoke(level);
             this.Capabilities = this.getCapabilities();

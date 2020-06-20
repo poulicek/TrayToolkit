@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Management;
 
-namespace TrayToolkit.IO.Screen.Driver
+namespace TrayToolkit.IO.Display.Driver
 {
     internal class WMI : IDisposable
     {

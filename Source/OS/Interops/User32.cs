@@ -56,6 +56,14 @@ namespace TrayToolkit.OS.Interops
             public int ExtraInfo;
         }
 
+
+        public const int SW_SHOWNOACTIVATE = 4;
+        public const uint SWP_NOACTIVATE = 0x10;
+
+        public delegate bool MonitorEnumDelegate(IntPtr hMonitor, IntPtr hdcMonitor, ref RECT lprcMonitor, IntPtr dwData);
+        public delegate IntPtr LowLevelCallbackProc(int nCode, IntPtr wParam, IntPtr lParam);
+
+
         [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
         public static extern IntPtr SetWindowsHookEx(int idHook, LowLevelCallbackProc lpfn, IntPtr hMod, uint dwThreadId);
 
@@ -78,8 +86,10 @@ namespace TrayToolkit.OS.Interops
         [DllImport("user32.dll")]
         public static extern bool EnumDisplayMonitors(IntPtr hdc, IntPtr lprcClip, MonitorEnumDelegate lpfnEnum, IntPtr dwData);
 
-        
-        public delegate bool MonitorEnumDelegate(IntPtr hMonitor, IntPtr hdcMonitor, ref RECT lprcMonitor, IntPtr dwData);
-        public delegate IntPtr LowLevelCallbackProc(int nCode, IntPtr wParam, IntPtr lParam);
+        [DllImport("user32.dll", EntryPoint = "SetWindowPos")]
+        public static extern bool SetWindowPos(int hWnd, int hWndInsertAfter, int X, int Y, int cx, int cy, uint uFlags);
+
+        [DllImport("user32.dll")]
+        public static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
     }
 }

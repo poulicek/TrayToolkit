@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using TrayToolkit.OS.Interops;
 
-namespace TrayToolkit.IO.Screen.Driver
+namespace TrayToolkit.IO.Display.Driver
 {
     internal class MonitorsCollector : IEnumerable, IDisposable
     {

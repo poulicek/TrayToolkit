@@ -100,15 +100,14 @@ namespace TrayToolkit.Helpers
         /// </summary>
         private static byte[] getResizedBytes(Bitmap srcBmp, int width, int height)
         {
-            using (var dstBmp = new Bitmap(width, height))
-            using (var dstGraphics = Graphics.FromImage(dstBmp))
-            using (var dstStream = new MemoryStream())
+            using (var b = new Bitmap(width, height))
+            using (var g = Graphics.FromImage(b))
+            using (var s = new MemoryStream())
             {
-                dstGraphics.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
-                dstGraphics.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.HighQualityBicubic;
-                dstGraphics.DrawImage(srcBmp, 0, 0, width, height);
-                dstBmp.Save(dstStream, ImageFormat.Png);
-                return dstStream.ToArray();
+                g.SetHighQuality();
+                g.DrawImage(srcBmp, 0, 0, width, height);
+                b.Save(s, ImageFormat.Png);
+                return s.ToArray();
             }
         }
     }
