@@ -164,7 +164,7 @@ namespace TrayToolkit.OS.Input
         private bool tryInvokeActionKey(Keys key, bool isDown)
         {
             foreach (var k in actionKeys)
-                if (k.Key == key && k.SetPressed(isDown) == true)
+                if (k.Key == key && k.SetPressedState(isDown) == true)
                     return true;
 
             return false;

@@ -53,6 +53,7 @@
     <Compile Include="Helpers\FileSystemHelper.cs" />
     <Compile Include="Helpers\GraphicsHelper.cs" />
     <Compile Include="Helpers\IconHelper.cs" />
+    <Compile Include="Helpers\InputHelper.cs" />
     <Compile Include="Helpers\ThreadingHelper.cs" />
     <Compile Include="OS\Interops\Dxva2.cs" />
     <Compile Include="OS\Interops\User32.cs" />

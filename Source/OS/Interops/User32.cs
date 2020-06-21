@@ -13,6 +13,8 @@ namespace TrayToolkit.OS.Interops
             long bottom;
         }
 
+        public const uint KEYEVENTF_KEYUP = 0x0002;
+        public const uint KEYEVENTF_EXTENDEDKEY = 0x0001;
 
         public const int WH_KEYBOARD_LL = 13;
         public const int WH_MOUSE_LL = 14;
@@ -91,5 +93,8 @@ namespace TrayToolkit.OS.Interops
 
         [DllImport("user32.dll")]
         public static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
+
+        [DllImport("user32.dll")]
+        public static extern void keybd_event(byte bVk, byte bScan, uint dwFlags, uint dwExtraInfo);
     }
 }

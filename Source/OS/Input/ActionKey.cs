@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Windows.Forms;
+using TrayToolkit.Helpers;
+using TrayToolkit.OS.Interops;
 
 namespace TrayToolkit.OS.Input
 {
@@ -27,7 +29,20 @@ namespace TrayToolkit.OS.Input
             this.longPressTimer.Tick += this.longPressCallback;
         }
 
-        public bool SetPressed(bool pressed)
+
+        /// <summary>
+        /// Presses the key
+        /// </summary>
+        public void Press()
+        {
+            this.Key.Press();
+        }
+
+
+        /// <summary>
+        /// Sets the pressed state
+        /// </summary>
+        public bool SetPressedState(bool pressed)
         {
             this.IsPressed = false;
             this.longPressTimer.Stop();
@@ -45,6 +60,10 @@ namespace TrayToolkit.OS.Input
             return this.Released?.Invoke() == true;
         }
 
+
+        /// <summary>
+        /// Long press detection
+        /// </summary>
         private void longPressCallback(object sender, EventArgs e)
         {
             this.longPressTimer.Stop();
@@ -64,17 +83,11 @@ namespace TrayToolkit.OS.Input
             if (this.Key.HasFlag(Keys.Shift))
                 str += "Shift,";
 
-            var rootKey = GetUnmodifiedKey(this.Key);
+            var rootKey = this.Key.GetUnmodifiedKey();
             if (rootKey != Keys.None)
                 str += rootKey;
 
             return str.Trim(',').Replace(',', '+');
-        }
-
-
-        public static Keys GetUnmodifiedKey(Keys key)
-        {
-            return key & ~Keys.Control & ~Keys.Shift & ~Keys.Alt;
         }
     }
 }
