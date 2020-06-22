@@ -49,14 +49,6 @@ namespace TrayToolkit.UI
             }
 
 
-            /// <summary>
-            /// Gets the desired location
-            /// </summary>
-            private Point getCornerLocation()
-            {
-                var screenArea = Screen.GetWorkingArea(this);
-                return new Point(screenArea.Width - 24 - this.Width, screenArea.Height - 16 - this.Height);
-            }
 
 
             /// <summary>
@@ -64,7 +56,7 @@ namespace TrayToolkit.UI
             /// </summary>
             public void ShowInCorner()
             {
-                this.Location = this.getCornerLocation();
+                this.Location = this.GetCornerLocation();
                 this.ShowUnfocused();
             }
 
@@ -214,17 +206,20 @@ namespace TrayToolkit.UI
         {
             resetTimer(timeout);
 
-            tooltip.LostFocus -= onLostFocus;
-            tooltip.Icon = icon;
-            tooltip.Message = message;
-            tooltip.Note = note;
-            tooltip.ShowInCorner();
-
-            if (timeout == 0)
+            tooltip.InvokeIfRequired(() =>
             {
-                tooltip.Focus();
-                tooltip.LostFocus += onLostFocus;
-            }
+                tooltip.LostFocus -= onLostFocus;
+                tooltip.Icon = icon;
+                tooltip.Message = message;
+                tooltip.Note = note;
+                tooltip.ShowInCorner();
+
+                if (timeout == 0)
+                {
+                    tooltip.Focus();
+                    tooltip.LostFocus += onLostFocus;
+                }
+            });
         }
 
         /// <summary>
