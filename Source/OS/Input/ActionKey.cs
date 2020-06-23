@@ -44,6 +44,9 @@ namespace TrayToolkit.OS.Input
         /// </summary>
         public bool SetPressedState(bool pressed)
         {
+            if (this.IsPressed == pressed)
+                return false;
+
             this.IsPressed = false;
             this.longPressTimer.Stop();
 
