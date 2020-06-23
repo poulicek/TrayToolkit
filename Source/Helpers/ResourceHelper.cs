@@ -11,10 +11,21 @@ namespace TrayToolkit.Helpers
         /// <summary>
         /// Returns the embedded image instance
         /// </summary>
-        public static Bitmap GetResourceImage(string imagePath, Assembly customAssembly = null)
+        public static Bitmap GetResourceImage(string filePath, Assembly customAssembly = null)
         {
-            using (var s = GetResourceStream(imagePath, customAssembly))
+            using (var s = GetResourceStream(filePath, customAssembly))
                 return s == null ? null : new Bitmap(s);
+        }
+
+
+        /// <summary>
+        /// Returns the embedded image instance
+        /// </summary>
+        public static string GetResourceString(string filePath, Assembly customAssembly = null)
+        {
+            using (var s = GetResourceStream(filePath, customAssembly))
+            using (var r = new StreamReader(s))
+                return r.ReadToEnd();
         }
 
 

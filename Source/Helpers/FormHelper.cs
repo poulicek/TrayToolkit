@@ -30,6 +30,9 @@ namespace TrayToolkit.Helpers
         }
 
 
+        /// <summary>
+        /// Invokes the action if it is from different thread
+        /// </summary>
         public static void InvokeIfRequired(this Form form, Action callback)
         {
             if (form.InvokeRequired)

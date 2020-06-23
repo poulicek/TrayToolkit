@@ -49,8 +49,6 @@ namespace TrayToolkit.UI
             }
 
 
-
-
             /// <summary>
             /// Shows the unfocused contorl
             /// </summary>
@@ -118,6 +116,11 @@ namespace TrayToolkit.UI
                 return rect;
             }
 
+
+
+            /// <summary>
+            /// Makes sure the size of the balloon matches the contents
+            /// </summary>
             private void ensureSize(Graphics g, string str, Font f, Rectangle rect)
             {
                 var s = g.MeasureString(str, f);
