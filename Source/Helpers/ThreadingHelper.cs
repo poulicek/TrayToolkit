@@ -1,5 +1,8 @@
 ﻿using System;
+using System.Reflection;
 using System.Threading;
+using System.Windows.Forms;
+using TrayToolkit.UI;
 
 namespace TrayToolkit.Helpers
 {
@@ -42,6 +45,33 @@ namespace TrayToolkit.Helpers
                 }
             }
             catch { }
+        }
+
+
+        /// <summary>
+        /// Invokes the action if it is from different thread
+        /// </summary>
+        public static void InvokeIfRequired(this Control ctrl, Action callback)
+        {
+            if (ctrl.InvokeRequired)
+                ctrl.BeginInvoke(callback);
+            else
+                callback();
+        }
+
+
+        /// <summary>
+        /// Handles the exception
+        /// </summary>
+        public static void HandleException(Exception ex, bool debugOnly = true)
+        {
+
+#if !DEBUG
+            if (debugOnly)
+                return;
+#endif
+            BalloonTooltip.Show(Assembly.GetEntryAssembly().GetName().Name + " - Error", null, ex.ToString());
+
         }
     }
 }

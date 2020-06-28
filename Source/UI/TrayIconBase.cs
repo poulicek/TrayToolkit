@@ -28,6 +28,7 @@ namespace TrayToolkit.UI
 
             this.Text = title;
             this.aboutUrl = aboutUrl;
+            BalloonTooltip.InitActivation();
         }
 
 

@@ -23,22 +23,10 @@ namespace TrayToolkit.Helpers
         /// </summary>
         public static void ShowUnfocused(this Form form)
         {
-            var loc = form.Location;
-            User32.SetWindowPos(form.Handle.ToInt32(), 0, loc.X, loc.Y, form.Width, form.Height, User32.SWP_NOACTIVATE);
             User32.ShowWindow(form.Handle, User32.SW_SHOWNOACTIVATE);
+            //var loc = form.Location;
+            //User32.SetWindowPos(form.Handle.ToInt32(), 0, loc.X, loc.Y, form.Width, form.Height, User32.SWP_NOACTIVATE);
             form.Invalidate();
-        }
-
-
-        /// <summary>
-        /// Invokes the action if it is from different thread
-        /// </summary>
-        public static void InvokeIfRequired(this Form form, Action callback)
-        {
-            if (form.InvokeRequired)
-                form.BeginInvoke(callback);
-            else
-                callback();
         }
     }
 }

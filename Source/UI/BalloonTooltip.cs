@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Drawing;
-using System.Drawing.Drawing2D;
-using System.Drawing.Text;
 using System.Windows.Forms;
 using TrayToolkit.Helpers;
 
@@ -13,9 +11,20 @@ namespace TrayToolkit.UI
 
         private class BalloonControl : Form
         {
+            private readonly StringGraphics sgMessage = new StringGraphics(
+                        new Font("Segoe UI", 11, FontStyle.Bold, GraphicsUnit.Point),
+                        new StringFormat() { Trimming = StringTrimming.EllipsisCharacter });
+
+            private readonly StringGraphics sgNote = new StringGraphics(
+                        new Font("Segoe UI", 9, GraphicsUnit.Point),
+                        new StringFormat() { LineAlignment = StringAlignment.Far, Trimming = StringTrimming.EllipsisCharacter });
+
+
+            private Size defaultSize;
+
             public new Bitmap Icon { get; set; }
-            public string Message { get; set; }
-            public string Note { get; set; }
+            public string Message { get { return this.sgMessage.Text; } set { this.sgMessage.Text = value; } }
+            public string Note { get { return this.sgNote.Text; } set { this.sgNote.Text = value; } }
 
             public BalloonControl()
             {
@@ -39,8 +48,15 @@ namespace TrayToolkit.UI
                     this.Hide();
                 else
                     base.OnPaintBackground(e);
-
             }
+
+            protected override void OnResize(EventArgs e)
+            {
+                base.OnResize(e);
+                if (this.defaultSize.IsEmpty)
+                    this.defaultSize = this.Size;
+            }
+
 
             protected override void OnPaint(PaintEventArgs e)
             {
@@ -49,13 +65,21 @@ namespace TrayToolkit.UI
             }
 
 
+            protected override void Dispose(bool disposing)
+            {
+                base.Dispose(disposing);
+                this.sgMessage.Dispose();
+                this.sgNote.Dispose();
+            }
+
+
             /// <summary>
             /// Shows the unfocused contorl
             /// </summary>
             public void ShowInCorner()
             {
-                this.Location = this.GetCornerLocation();
                 this.ShowUnfocused();
+                this.Location = this.GetCornerLocation();
             }
 
             #region Look
@@ -65,69 +89,62 @@ namespace TrayToolkit.UI
             /// </summary>
             private void drawContents(Graphics g)
             {
-                var margin = (int)(16 * g.DpiX / 96);
-                var textRect = Rectangle.Inflate(this.ClientRectangle, -margin, -margin);
-                var iconRect = this.drawIcon(g, textRect, margin);
-                var textMargin = iconRect.IsEmpty ? 0 : iconRect.Width + margin;
+                var padding = (int)(16 * g.DpiX / 96);
+                var cntRect = Rectangle.Inflate(this.ClientRectangle, -padding, -padding);
 
-                this.drawMessage(g, textRect, textMargin);
+                var iconRect = new Rectangle(cntRect.X, cntRect.Y + padding, cntRect.Width, cntRect.Height - padding - padding);
+                var iconSize = this.drawIcon(g, iconRect);
+
+                var textMargin = iconSize.IsEmpty ? 0 : iconSize.Width + padding;
+                var textRect = new Rectangle(cntRect.X + textMargin, cntRect.Y, cntRect.Width - textMargin, cntRect.Height);
+
+                this.ensureSize(textRect.Size);
+                this.drawMessage(g, textRect);
             }
 
 
             /// <summary>
             /// Draws the message
             /// </summary>
-            private Rectangle drawMessage(Graphics g, Rectangle rect, int margin)
+            private void drawMessage(Graphics g, Rectangle rect)
             {
                 if (string.IsNullOrEmpty(this.Message))
-                    return Rectangle.Empty;
-
-                rect.X += margin;
-                rect.Width -= margin;
+                    return;
 
                 g.SetHighQuality();
 
-                if (string.IsNullOrEmpty(this.Note))
-                {
-                    using (var f = new Font("Segoe UI", 11, FontStyle.Bold, GraphicsUnit.Point))
-                    using (var sf = new StringFormat() { LineAlignment = StringAlignment.Center })
-                    {
-                        g.DrawString(this.Message, f, Brushes.White, rect, sf);
-                        this.ensureSize(g, this.Message, f, rect);
-                    }
-                }
-                else
-                {
-                    using (var f = new Font("Segoe UI", 11, FontStyle.Bold, GraphicsUnit.Point))
-                    using (var sf = new StringFormat() { LineAlignment = StringAlignment.Near })
-                    {
-                        g.DrawString(this.Message, f, Brushes.White, new Rectangle(rect.X, rect.Y, rect.Width, rect.Height), sf);
-                        this.ensureSize(g, this.Message, f, rect);
-                    }
+                this.sgMessage.LineAlignment = this.sgNote.IsEmpty ? StringAlignment.Center : StringAlignment.Near;
+                this.sgMessage.Draw(g, Brushes.White, rect);
 
-                    using (var f = new Font("Segoe UI", 9, GraphicsUnit.Point))
-                    using (var sf = new StringFormat() { LineAlignment = StringAlignment.Far })
-                    {
-                        g.DrawString(this.Note, f, Brushes.White, new Rectangle(rect.X, rect.Y, rect.Width, rect.Height), sf);
-                        this.ensureSize(g, this.Note, f, rect);
-                    }
-                }
+                if (!this.sgNote.IsEmpty)
+                {
+                    var m = this.sgMessage.Measure(rect.Width).Height;
+                    rect.Y += m;
+                    rect.Height -= m;
 
-                return rect;
+                    this.sgNote.Draw(g, Brushes.White, rect);
+                }
             }
-
 
 
             /// <summary>
             /// Makes sure the size of the balloon matches the contents
             /// </summary>
-            private void ensureSize(Graphics g, string str, Font f, Rectangle rect)
+            private void ensureSize(Size size)
             {
-                var s = g.MeasureString(str, f);
-                if (s.Width > rect.Width)
+                if (this.defaultSize.IsEmpty)
+                    return;
+
+                var textHeight = this.sgMessage.Measure(size.Width).Height + this.sgNote.Measure(size.Width).Height;
+                var dstHeight = textHeight <= size.Height || size.Height < 0
+                    ? this.defaultSize.Height
+                    : Math.Min(this.defaultSize.Height + textHeight - size.Height, Screen.PrimaryScreen.Bounds.Height / 3);
+
+                if (this.Height != dstHeight)
                 {
-                    this.Width += ((int)Math.Ceiling(s.Width) - rect.Width);
-                    this.ShowInCorner();
+                    if (dstHeight > this.Height)
+                        this.Location = new Point(this.Location.X, this.Location.Y - (dstHeight - this.Height));
+                    this.Height = dstHeight;
                 }
             }
 
@@ -135,18 +152,14 @@ namespace TrayToolkit.UI
             /// <summary>
             /// Draws the icon
             /// </summary>
-            private Rectangle drawIcon(Graphics g, Rectangle rect, int margin)
+            private Size drawIcon(Graphics g, Rectangle rect)
             {
                 if (this.Icon == null)
-                    return Rectangle.Empty;
+                    return Size.Empty;
 
-                var height = rect.Height - margin - margin;
-                var width = this.Icon.Width * height / this.Icon.Height;
-                var iconRect = new Rectangle(rect.X, rect.Y + margin, width, height);
-
-                g.DrawImage(this.Icon, iconRect);
-
-                return iconRect;
+                rect = new Rectangle(rect.X, rect.Y, this.Icon.Width * rect.Height / this.Icon.Height, rect.Height);
+                g.DrawImage(this.Icon, rect);
+                return rect.Size;
             }
 
             #endregion
