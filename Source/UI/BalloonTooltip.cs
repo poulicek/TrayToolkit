@@ -11,20 +11,18 @@ namespace TrayToolkit.UI
 
         private class BalloonControl : Form
         {
-            private readonly StringGraphics sgMessage = new StringGraphics(
-                        new Font("Segoe UI", 11, FontStyle.Bold, GraphicsUnit.Point),
-                        new StringFormat() { Trimming = StringTrimming.EllipsisCharacter });
-
-            private readonly StringGraphics sgNote = new StringGraphics(
-                        new Font("Segoe UI", 9, GraphicsUnit.Point),
-                        new StringFormat() { LineAlignment = StringAlignment.Far, Trimming = StringTrimming.EllipsisCharacter });
-
-
-            private Size defaultSize;
-
             public new Bitmap Icon { get; set; }
             public string Message { get { return this.sgMessage.Text; } set { this.sgMessage.Text = value; } }
             public string Note { get { return this.sgNote.Text; } set { this.sgNote.Text = value; } }
+
+            private readonly StringGraphics sgMessage = new StringGraphics(
+                new Font("Segoe UI", 11, FontStyle.Bold, GraphicsUnit.Point),
+                new StringFormat() { Trimming = StringTrimming.EllipsisCharacter });
+
+            private readonly StringGraphics sgNote = new StringGraphics(
+                new Font("Segoe UI", 9, GraphicsUnit.Point),
+                new StringFormat() { LineAlignment = StringAlignment.Far, Trimming = StringTrimming.EllipsisCharacter });
+
 
             public BalloonControl()
             {
@@ -50,18 +48,10 @@ namespace TrayToolkit.UI
                     base.OnPaintBackground(e);
             }
 
-            protected override void OnResize(EventArgs e)
-            {
-                base.OnResize(e);
-                if (this.defaultSize.IsEmpty)
-                    this.defaultSize = this.Size;
-            }
-
 
             protected override void OnPaint(PaintEventArgs e)
             {
-                if (!string.IsNullOrEmpty(this.Message))
-                    this.drawContents(e.Graphics);
+                this.drawContents(e.Graphics);
             }
 
 
@@ -90,6 +80,7 @@ namespace TrayToolkit.UI
             private void drawContents(Graphics g)
             {
                 var padding = (int)(16 * g.DpiX / 96);
+                var clientHeight = (int)(102 * g.DpiX / 96);
                 var cntRect = Rectangle.Inflate(this.ClientRectangle, -padding, -padding);
 
                 var iconRect = new Rectangle(cntRect.X, cntRect.Y + padding, cntRect.Width, cntRect.Height - padding - padding);
@@ -98,8 +89,8 @@ namespace TrayToolkit.UI
                 var textMargin = iconSize.IsEmpty ? 0 : iconSize.Width + padding;
                 var textRect = new Rectangle(cntRect.X + textMargin, cntRect.Y, cntRect.Width - textMargin, cntRect.Height);
 
-                this.ensureSize(textRect.Size);
                 this.drawMessage(g, textRect);
+                this.ensureSize(clientHeight, textRect.Size);
             }
 
 
@@ -130,15 +121,12 @@ namespace TrayToolkit.UI
             /// <summary>
             /// Makes sure the size of the balloon matches the contents
             /// </summary>
-            private void ensureSize(Size size)
+            private void ensureSize(int clientHeight, Size size)
             {
-                if (this.defaultSize.IsEmpty)
-                    return;
-
                 var textHeight = this.sgMessage.Measure(size.Width).Height + this.sgNote.Measure(size.Width).Height;
                 var dstHeight = textHeight <= size.Height || size.Height < 0
-                    ? this.defaultSize.Height
-                    : Math.Min(this.defaultSize.Height + textHeight - size.Height, Screen.PrimaryScreen.Bounds.Height / 3);
+                    ? clientHeight
+                    : Math.Min(clientHeight + textHeight - size.Height, Screen.PrimaryScreen.Bounds.Height / 3);
 
                 if (this.Height != dstHeight)
                 {
