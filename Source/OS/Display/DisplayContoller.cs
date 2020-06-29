@@ -58,6 +58,8 @@ namespace TrayToolkit.IO.Display
         {
             try
             {
+                brightness = Math.Min(Math.Max(brightness, 0), 100);
+
                 using (var monitors = new MonitorsCollector())
                     foreach (Dxva2.PHYSICAL_MONITOR m in monitors)
                         Dxva2.SetMonitorBrightness(m.hPhysicalMonitor, (short)brightness);
