@@ -57,7 +57,7 @@
     <Compile Include="Helpers\ThreadingHelper.cs" />
     <Compile Include="OS\Interops\Dxva2.cs" />
     <Compile Include="OS\Interops\User32.cs" />
-    <Compile Include="OS\Display\DisplayContoller.cs" />
+    <Compile Include="OS\Display\DisplayController.cs" />
     <Compile Include="OS\Display\Driver\MonitorsCollector.cs" />
     <Compile Include="OS\Display\Driver\WMI.cs" />
     <Compile Include="Helpers\FormHelper.cs" />

@@ -6,7 +6,7 @@ using TrayToolkit.OS.Interops;
 
 namespace TrayToolkit.IO.Display
 {
-    public class DisplayContoller : IDisposable
+    public class DisplayController : IDisposable
     {
         public struct BrightnessInfo
         {
@@ -33,7 +33,7 @@ namespace TrayToolkit.IO.Display
 
 
 
-        public DisplayContoller()
+        public DisplayController()
         {
             this.wmiDriver.BrightnessChanged += (level) => this.BrightnessChanged?.Invoke(level);
             this.Capabilities = this.getCapabilities();

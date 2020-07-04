@@ -1,4 +1,5 @@
-﻿using System.Drawing;
+﻿using System;
+using System.Drawing;
 using System.IO;
 using System.Reflection;
 
@@ -37,6 +38,16 @@ namespace TrayToolkit.Helpers
             var assm = customAssembly ?? assembly;
             var nameSpace = assm.EntryPoint?.DeclaringType.Namespace.Split('.')[0] ?? assm.GetName().Name;
             return assm.GetManifestResourceStream($"{nameSpace}.{path}");
+        }
+
+
+        /// <summary>
+        /// Returns the date when the assembly was updated the last time
+        /// </summary>
+        /// <returns></returns>
+        public static DateTime GetLastWriteTime()
+        {
+            return File.GetLastWriteTime(assembly.Location);
         }
     }
 }
