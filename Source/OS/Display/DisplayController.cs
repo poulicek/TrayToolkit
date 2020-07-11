@@ -4,7 +4,7 @@ using TrayToolkit.Helpers;
 using TrayToolkit.IO.Display.Driver;
 using TrayToolkit.OS.Interops;
 
-namespace TrayToolkit.IO.Display
+namespace TrayToolkit.OS.Display
 {
     public class DisplayController : IDisposable
     {

@@ -5,9 +5,14 @@ namespace TrayToolkit.Helpers
 {
     public static class InputHelper
     {
-        public static void Press(this Keys key)
+        public static void Down(this Keys key)
         {
             User32.keybd_event((byte)key, 0, User32.KEYEVENTF_EXTENDEDKEY | 0, 0);
+        }
+
+        public static void Up(this Keys key)
+        {
+            User32.keybd_event((byte)key, 0, User32.KEYEVENTF_KEYUP | 0, 0);
         }
 
         public static Keys GetUnmodifiedKey(this Keys key)

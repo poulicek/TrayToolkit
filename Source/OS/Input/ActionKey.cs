@@ -35,7 +35,7 @@ namespace TrayToolkit.OS.Input
         /// </summary>
         public void Press()
         {
-            this.Key.Press();
+            this.Key.Down();
         }
 
 
