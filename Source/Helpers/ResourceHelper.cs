@@ -25,8 +25,7 @@ namespace TrayToolkit.Helpers
         public static string GetResourceString(string filePath, Assembly customAssembly = null)
         {
             using (var s = GetResourceStream(filePath, customAssembly))
-            using (var r = new StreamReader(s))
-                return r.ReadToEnd();
+                return s.ReadString();
         }
 
 
@@ -48,6 +47,16 @@ namespace TrayToolkit.Helpers
         public static DateTime GetLastWriteTime()
         {
             return File.GetLastWriteTime(assembly.Location);
+        }
+
+
+        /// <summary>
+        /// Reads the string from the stream
+        /// </summary>
+        public static string ReadString(this Stream s)
+        {
+            using (var r = new StreamReader(s))
+                return r.ReadToEnd();
         }
     }
 }
