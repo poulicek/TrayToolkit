@@ -84,6 +84,9 @@ namespace TrayToolkit.UI
         /// </summary>
         protected virtual void updateLook()
         {
+            if (this.trayIcon == null)
+                return;
+
             SetProcessDPIAware();
             var oldIcon = this.trayIcon.Icon;
             this.trayIcon.Icon = this.getIcon();

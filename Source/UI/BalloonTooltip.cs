@@ -243,7 +243,7 @@ namespace TrayToolkit.UI
         {
             resetTimer();
             tooltip.LostFocus -= onLostFocus;
-            tooltip.Hide();
+            tooltip.InvokeIfRequired(tooltip.Hide);
         }
 
 
