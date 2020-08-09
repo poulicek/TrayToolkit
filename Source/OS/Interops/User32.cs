@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Runtime.InteropServices;
+using System.Security.Cryptography.X509Certificates;
+using System.Windows.Forms;
 
 namespace TrayToolkit.OS.Interops
 {
@@ -58,6 +60,81 @@ namespace TrayToolkit.OS.Interops
             public int ExtraInfo;
         }
 
+        public enum INPUTTYPE : uint
+        {
+            Keyboard = 1
+        }
+
+        public enum KEYEVENTF : uint
+        {
+            KeyUp = 2,
+        }
+
+
+        [StructLayout(LayoutKind.Sequential)]
+        public struct INPUT
+        {
+            public INPUTTYPE type;
+            public INPUT_U u;
+
+            public static INPUT VirtualKeyDown(Keys keyCode)
+            {
+                var input = new INPUT() { type = INPUTTYPE.Keyboard };
+                input.u.ki = new KEYBDINPUT() { virtualKey = (ushort)keyCode };
+                return input;
+            }
+
+            public static INPUT VirtualKeyUp(Keys keyCode)
+            {
+                var input = new INPUT() { type = INPUTTYPE.Keyboard };
+                input.u.ki = new KEYBDINPUT() { virtualKey = (ushort)keyCode, flags = KEYEVENTF.KeyUp };
+                return input;
+            }
+        }
+
+        [StructLayout(LayoutKind.Explicit)]
+        public struct INPUT_U
+        {
+            [FieldOffset(0)]
+            public KEYBDINPUT ki;
+
+            [FieldOffset(0)]
+            public MOUSEINPUT mi;
+
+            [FieldOffset(0)]
+            public HARDWAREINPUT hi;
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        public struct KEYBDINPUT
+        {
+            public ushort virtualKey;
+            public ushort scanCode;
+            public KEYEVENTF flags;
+            public uint time;
+
+            public IntPtr extraInfo;
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        public struct MOUSEINPUT
+        {
+            public int dx;
+            public int dy;
+            public uint mouseData;
+            public uint flags;
+            public uint time;
+            public IntPtr extraInfo;
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        public struct HARDWAREINPUT
+        {
+            public int uMsg;
+            public short wParam;
+            public short lParam;
+        }
+
 
         public const int SW_SHOWNOACTIVATE = 4;
         public const uint SWP_NOACTIVATE = 0x10;
@@ -65,6 +142,8 @@ namespace TrayToolkit.OS.Interops
         public delegate bool MonitorEnumDelegate(IntPtr hMonitor, IntPtr hdcMonitor, ref RECT lprcMonitor, IntPtr dwData);
         public delegate IntPtr LowLevelCallbackProc(int nCode, IntPtr wParam, IntPtr lParam);
 
+        [DllImport("User32.dll", SetLastError = true)]
+        public static extern uint SendInput(int nInputs, [MarshalAs(UnmanagedType.LPArray), In] INPUT[] inputs, int cbSize);
 
         [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
         public static extern IntPtr SetWindowsHookEx(int idHook, LowLevelCallbackProc lpfn, IntPtr hMod, uint dwThreadId);
