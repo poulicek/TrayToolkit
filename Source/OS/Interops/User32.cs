@@ -67,7 +67,10 @@ namespace TrayToolkit.OS.Interops
 
         public enum KEYEVENTF : uint
         {
-            KeyUp = 2,
+            EXTENDEDKEY = 0x0001,
+            KEYUP = 0x0002,
+            SCANCODE = 0x0008,
+            UNICODE = 0x0004
         }
 
 
@@ -77,17 +80,17 @@ namespace TrayToolkit.OS.Interops
             public INPUTTYPE type;
             public INPUT_U u;
 
-            public static INPUT VirtualKeyDown(Keys keyCode)
+            public static INPUT VirtualKeyDown(Keys keyCode, ushort scanCode)
             {
                 var input = new INPUT() { type = INPUTTYPE.Keyboard };
-                input.u.ki = new KEYBDINPUT() { virtualKey = (ushort)keyCode };
+                input.u.ki = new KEYBDINPUT() { scanCode = scanCode, virtualKey = (ushort)keyCode, flags = scanCode > 0 ? KEYEVENTF.SCANCODE : 0 };
                 return input;
             }
 
-            public static INPUT VirtualKeyUp(Keys keyCode)
+            public static INPUT VirtualKeyUp(Keys keyCode, ushort scanCode)
             {
                 var input = new INPUT() { type = INPUTTYPE.Keyboard };
-                input.u.ki = new KEYBDINPUT() { virtualKey = (ushort)keyCode, flags = KEYEVENTF.KeyUp };
+                input.u.ki = new KEYBDINPUT() { scanCode = scanCode, virtualKey = (ushort)keyCode, flags = (scanCode > 0 ? KEYEVENTF.SCANCODE : 0) | KEYEVENTF.KEYUP };
                 return input;
             }
         }

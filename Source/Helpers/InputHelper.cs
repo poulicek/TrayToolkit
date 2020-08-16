@@ -8,13 +8,13 @@ namespace TrayToolkit.Helpers
     {
         public static void Down(this Keys key)
         {
-            var inputs = new User32.INPUT[] { User32.INPUT.VirtualKeyDown(key) };
+            var inputs = new User32.INPUT[] { User32.INPUT.VirtualKeyDown(key, getScanCode(key)) };
             User32.SendInput(inputs.Length, inputs, Marshal.SizeOf(typeof(User32.INPUT)));
         }
 
         public static void Up(this Keys key)
         {
-            var inputs = new User32.INPUT[] { User32.INPUT.VirtualKeyUp(key) };
+            var inputs = new User32.INPUT[] { User32.INPUT.VirtualKeyUp(key, getScanCode(key)) };
             User32.SendInput(inputs.Length, inputs, Marshal.SizeOf(typeof(User32.INPUT)));
         }
 
@@ -24,5 +24,18 @@ namespace TrayToolkit.Helpers
         }
 
 
+        private static ushort getScanCode(Keys key)
+        {
+            switch (key)
+            {
+                case Keys.X: return 0x2D;
+                case Keys.Up: return 0xC8;
+                case Keys.Left: return 0xCB;
+                case Keys.Right: return 0xCD;
+                case Keys.Down: return 0xD0;
+            }
+
+            return 0;
+        }
     }
 }
