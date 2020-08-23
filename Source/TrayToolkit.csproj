@@ -67,6 +67,9 @@
     <Compile Include="OS\Input\ActionKey.cs" />
     <Compile Include="OS\Input\InputListener.cs" />
     <Compile Include="UI\BalloonTooltip.cs" />
+    <Compile Include="UI\LabeledProgressBar.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="UI\StringGraphics.cs" />
     <Compile Include="UI\TrayIconBase.cs">
       <SubType>Form</SubType>
