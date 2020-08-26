@@ -1,5 +1,8 @@
-﻿using System.IO;
+﻿using System.Collections.Generic;
+using System.IO;
 using System.Reflection;
+using System.Threading.Tasks;
+using System.Windows.Forms;
 
 namespace TrayToolkit.Helpers
 {
@@ -7,6 +10,61 @@ namespace TrayToolkit.Helpers
     {
         private static Assembly assembly = Assembly.GetEntryAssembly();
 
+        /// <summary>
+        /// Returns the main application folder
+        /// </summary>
         public static string AppFolder { get { return Path.GetDirectoryName(assembly.CodeBase); } }
+
+
+        /// <summary>
+        /// Returns the user-chosen folder
+        /// </summary>
+        public static string GetFolder()
+        {
+            using (var dlg = new FolderBrowserDialog())
+                if (dlg.ShowDialog() == DialogResult.OK)
+                    return dlg.SelectedPath;
+
+            return null;
+        }
+
+
+        /// <summary>
+        /// Finds all files with the given extensions
+        /// </summary>
+        public static List<string> FindFiles(string folder, params string[] filters)
+        {
+            var files = new List<string>();
+            Parallel.ForEach(filters, (filter) => files.AddRange(Directory.GetFiles(folder, filter, SearchOption.AllDirectories)));
+            return files;
+        }
+
+
+        /// <summary>
+        /// Returns true if the files match
+        /// </summary>
+        public static bool Matches(this FileInfo srcFile, FileInfo dstFile, int noOfComparedBytes = 5)
+        {
+            if (srcFile.Length != dstFile.Length)
+                return false;
+
+            var length = (int)srcFile.Length;
+            var step = noOfComparedBytes == 0 ? 1 : length / noOfComparedBytes;
+
+            using (var srcStream = srcFile.OpenRead())
+            using (var dstStream = dstFile.OpenRead())
+            {
+                for (int i = 0; i < length; i += step)
+                {
+                    srcStream.Seek(i, SeekOrigin.Begin);
+                    dstStream.Seek(i, SeekOrigin.Begin);
+
+                    if (srcStream.ReadByte() != dstStream.ReadByte())
+                        return false;
+                }
+            }
+
+            return true;
+        }
     }
 }
