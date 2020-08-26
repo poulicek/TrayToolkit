@@ -74,6 +74,15 @@ namespace TrayToolkit.OS.Input
             this.LongPress?.Invoke();
         }
 
+
+        private string keyToString(Keys key)
+        {
+            if (key >= Keys.D0 && key <= Keys.D9)
+                return key.ToString().Substring(1);
+
+            return key.ToString();
+        }
+
         public override string ToString()
         {
             var str = string.Empty;
@@ -88,7 +97,7 @@ namespace TrayToolkit.OS.Input
 
             var rootKey = this.Key.GetUnmodifiedKey();
             if (rootKey != Keys.None)
-                str += rootKey;
+                str += this.keyToString(rootKey);
 
             return str.Trim(',').Replace(',', '+');
         }
