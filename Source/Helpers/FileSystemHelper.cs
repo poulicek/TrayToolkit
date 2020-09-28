@@ -13,7 +13,7 @@ namespace TrayToolkit.Helpers
         /// <summary>
         /// Returns the main application folder
         /// </summary>
-        public static string AppFolder { get { return Path.GetDirectoryName(assembly.CodeBase); } }
+        public static string AppFolder { get { return Path.GetDirectoryName(assembly.CodeBase.Replace("file:", null).TrimStart('/')); } }
 
 
         /// <summary>
