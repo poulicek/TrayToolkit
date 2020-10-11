@@ -25,7 +25,7 @@ namespace TrayToolkit.OS.Input
 
         public ActionKey(Keys key)
         {
-            this.Key = key;
+            this.Key = key.IsNumeric() ? key.ToSmallNumeric() : key;
             this.longPressTimer.Tick += this.longPressCallback;
         }
 
@@ -36,6 +36,15 @@ namespace TrayToolkit.OS.Input
         public void Press()
         {
             this.Key.Down();
+        }
+
+
+        /// <summary>
+        /// Returns true if the action key matches the key
+        /// </summary>
+        public bool IsMatch(Keys key)
+        {
+            return this.Key == key || (this.Key.IsNumeric() && this.Key == key.ToSmallNumeric());
         }
 
 

@@ -24,6 +24,16 @@ namespace TrayToolkit.Helpers
         }
 
 
+        public static bool IsNumeric(this Keys key)
+        {
+            return (key >= Keys.D0 && key <= Keys.D9) || (key >= Keys.NumPad0 && key <= Keys.NumPad9);
+        }
+
+        public static Keys ToSmallNumeric(this Keys key)
+        {
+            return key >= Keys.NumPad0 ? key - 48 : key;
+        }
+
         private static ushort getScanCode(Keys key)
         {
             switch (key)
