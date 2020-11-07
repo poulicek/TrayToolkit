@@ -154,10 +154,23 @@ namespace TrayToolkit.UI
         }
 
 
+        /// <summary>
+        /// Generates the context menu items
+        /// </summary>
         protected virtual List<MenuItem> getContextMenuItems()
         {
+            return this.getContextMenuItems(true);
+        }
+
+
+        /// <summary>
+        /// Generates the context menu items
+        /// </summary>
+        protected List<MenuItem> getContextMenuItems(bool includeStartUp)
+        {
             var items = new List<MenuItem>();
-            items.Add(new MenuItem("Start with Windows", this.onStartUpClick) { Checked = this.startsWithWindows() });
+            if (includeStartUp)
+                items.Add(new MenuItem("Start with Windows", this.onStartUpClick) { Checked = this.startsWithWindows() });
 
 #if DEBUG
             items.Add(new MenuItem("Save icon...", this.onSaveIconClick));
@@ -229,8 +242,11 @@ namespace TrayToolkit.UI
 
         protected virtual void onAboutClick(object sender, EventArgs e)
         {
-            var fvi = FileVersionInfo.GetVersionInfo(Assembly.GetEntryAssembly().Location);
-            BalloonTooltip.Show(fvi.ProductName, null, $"{fvi.ProductVersion}{Environment.NewLine}{this.aboutUrl} ");
+            var asm = Assembly.GetEntryAssembly();
+            BalloonTooltip.Show(
+                FileVersionInfo.GetVersionInfo(Assembly.GetEntryAssembly().Location).ProductName,
+                null,
+                $"Version: {asm.GetName().Version.ToString(2)}{Environment.NewLine}{this.aboutUrl} ");
         }
 
 
