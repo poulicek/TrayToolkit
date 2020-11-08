@@ -159,7 +159,7 @@ namespace TrayToolkit.UI
         /// </summary>
         protected virtual List<MenuItem> getContextMenuItems()
         {
-            return this.getContextMenuItems(true);
+            return this.getContextMenuItems(!Assembly.GetEntryAssembly().Location.Contains("WindowsApps"));
         }
 
 
