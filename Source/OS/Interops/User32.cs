@@ -23,6 +23,9 @@ namespace TrayToolkit.OS.Interops
         public const int WM_KEYDOWN = 0x0100;
         public const int WM_SYSKEYDOWN = 0x0104;
 
+        public const uint MAPVK_VK_TO_VSC = 0x00;
+        public const uint MAPVK_VSC_TO_VK = 0x01;
+
 
         public enum MouseMessages
         {
@@ -80,14 +83,14 @@ namespace TrayToolkit.OS.Interops
             public INPUTTYPE type;
             public INPUT_U u;
 
-            public static INPUT VirtualKeyDown(Keys keyCode, ushort scanCode)
+            public static INPUT GetVirtualKeyDown(Keys keyCode, ushort scanCode)
             {
                 var input = new INPUT() { type = INPUTTYPE.Keyboard };
                 input.u.ki = new KEYBDINPUT() { scanCode = scanCode, virtualKey = (ushort)keyCode, flags = scanCode > 0 ? KEYEVENTF.SCANCODE : 0 };
                 return input;
             }
 
-            public static INPUT VirtualKeyUp(Keys keyCode, ushort scanCode)
+            public static INPUT GetVirtualKeyUp(Keys keyCode, ushort scanCode)
             {
                 var input = new INPUT() { type = INPUTTYPE.Keyboard };
                 input.u.ki = new KEYBDINPUT() { scanCode = scanCode, virtualKey = (ushort)keyCode, flags = (scanCode > 0 ? KEYEVENTF.SCANCODE : 0) | KEYEVENTF.KEYUP };
@@ -178,5 +181,8 @@ namespace TrayToolkit.OS.Interops
 
         [DllImport("user32.dll")]
         public static extern void keybd_event(byte bVk, byte bScan, uint dwFlags, uint dwExtraInfo);
+
+        [DllImport("user32.dll")]
+        public static extern uint MapVirtualKeyEx(uint uCode, uint uMapType, IntPtr dwhkl);
     }
 }
