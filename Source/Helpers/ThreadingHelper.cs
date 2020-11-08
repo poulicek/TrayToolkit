@@ -22,7 +22,8 @@ namespace TrayToolkit.Helpers
                     callback?.Invoke();
                 }
                 catch (Exception ex) { UnhandledException?.Invoke(ex); }
-            });
+            })
+            { IsBackground = true };
             t.Start();
             return t;
         }
