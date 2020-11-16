@@ -21,7 +21,7 @@ namespace TrayToolkit.UI
 
             private readonly StringGraphics sgNote = new StringGraphics(
                 new Font("Segoe UI", 9, GraphicsUnit.Point),
-                new StringFormat() { LineAlignment = StringAlignment.Far, Trimming = StringTrimming.EllipsisCharacter });
+                new StringFormat() { LineAlignment = StringAlignment.Center, Trimming = StringTrimming.EllipsisCharacter });
 
 
             public BalloonControl()
@@ -162,6 +162,7 @@ namespace TrayToolkit.UI
         static BalloonTooltip()
         {
             timer.Tick += onTimerTick;
+            tooltip.MouseDown += (s, e) => Hide();
         }
 
 
@@ -208,10 +209,11 @@ namespace TrayToolkit.UI
         /// </summary>
         public static void Show(string message, Bitmap icon = null, string note = null, int timeout = 0)
         {
-            resetTimer(timeout);
-
+            
             tooltip.InvokeIfRequired(() =>
             {
+                resetTimer(timeout);
+
                 tooltip.LostFocus -= onLostFocus;
                 tooltip.Icon = icon;
                 tooltip.Message = message;
@@ -241,9 +243,12 @@ namespace TrayToolkit.UI
         /// </summary>
         public static void Hide()
         {
-            resetTimer();
-            tooltip.LostFocus -= onLostFocus;
-            tooltip.InvokeIfRequired(tooltip.Hide);
+            tooltip.InvokeIfRequired(() =>
+            {
+                resetTimer();
+                tooltip.LostFocus -= onLostFocus;
+                tooltip.Hide();
+            });
         }
 
 

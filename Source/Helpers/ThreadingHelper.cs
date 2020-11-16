@@ -71,7 +71,7 @@ namespace TrayToolkit.Helpers
             if (debugOnly)
                 return;
 #endif
-            BalloonTooltip.Show(Assembly.GetEntryAssembly().GetName().Name + " - Error", null, ex.ToString());
+            BalloonTooltip.Show(Assembly.GetEntryAssembly().GetName().Name + " - Error", null, ex.ToString(), 5000);
 
         }
     }
