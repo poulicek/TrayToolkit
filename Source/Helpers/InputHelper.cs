@@ -11,26 +11,18 @@ namespace TrayToolkit.Helpers
 
         public static void Down(this Keys key, bool useScanCode = false)
         {
-            User32.keybd_event((byte)key, 0, User32.KEYEVENTF_EXTENDEDKEY | 0, 0);
-
             if (useScanCode)
-            {
-                var scanCode = getScanCode(key);
-                if (scanCode > 0)
-                    User32.SendInput(1, new User32.INPUT[] { User32.INPUT.GetVirtualKeyDown(key, scanCode) }, cbSize);
-            }
+                User32.SendInput(1, new User32.INPUT[] { User32.INPUT.GetVirtualKeyDown(key, getScanCode(key)) }, cbSize);
+            else
+                User32.keybd_event((byte)key, 0, User32.KEYEVENTF_EXTENDEDKEY | 0, 0);
         }
 
         public static void Up(this Keys key, bool useScanCode = false)
         {
-            User32.keybd_event((byte)key, 0, User32.KEYEVENTF_KEYUP | 0, 0);
-
             if (useScanCode)
-            {
-                var scanCode = getScanCode(key);
-                if (scanCode > 0)
-                    User32.SendInput(1, new User32.INPUT[] { User32.INPUT.GetVirtualKeyUp(key, scanCode) }, cbSize);
-            }
+                User32.SendInput(1, new User32.INPUT[] { User32.INPUT.GetVirtualKeyUp(key, getScanCode(key)) }, cbSize);
+            else
+                User32.keybd_event((byte)key, 0, User32.KEYEVENTF_EXTENDEDKEY | User32.KEYEVENTF_KEYUP, 0);
         }
 
 
