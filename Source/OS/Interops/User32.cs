@@ -18,6 +18,14 @@ namespace TrayToolkit.OS.Interops
         public const uint KEYEVENTF_KEYUP = 0x0002;
         public const uint KEYEVENTF_EXTENDEDKEY = 0x0001;
 
+        public const int MOUSEEVENTF_LEFTDOWN = 0x02;
+        public const int MOUSEEVENTF_LEFTUP = 0x04;
+        public const int MOUSEEVENTF_MIDDLEDOWN = 0x20;
+        public const int MOUSEEVENTF_MIDDLEUP = 0x40;
+        public const int MOUSEEVENTF_RIGHTDOWN = 0x08;
+        public const int MOUSEEVENTF_RIGHTUP = 0x10;
+
+
         public const int WH_KEYBOARD_LL = 13;
         public const int WH_MOUSE_LL = 14;
         public const int WM_KEYDOWN = 0x0100;
@@ -184,5 +192,11 @@ namespace TrayToolkit.OS.Interops
 
         [DllImport("user32.dll")]
         public static extern uint MapVirtualKeyEx(uint uCode, uint uMapType, IntPtr dwhkl);
+
+        [DllImport("user32.dll")]
+        public static extern void mouse_event(int dwFlags, int dx, int dy, int cButtons, int dwExtraInfo);
+
+        [DllImport("user32.dll")]
+        public static extern bool SetCursorPos(int x, int y);
     }
 }
