@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Drawing;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
 using TrayToolkit.OS.Interops;
@@ -72,6 +73,16 @@ namespace TrayToolkit.Helpers
                     User32.mouse_event(User32.MOUSEEVENTF_RIGHTUP, x, y, 0, 0);
                     break;
             }
+        }
+
+
+        [Obsolete("Seems not working for tray app")]
+        public static bool IsCaretFocused()
+        {
+            if (User32.GetFocus() == IntPtr.Zero)
+                User32.AttachThreadInput(User32.GetWindowThreadProcessId(User32.GetForegroundWindow(), out var id), Kernel32.GetCurrentThreadId(), true);
+
+            return User32.GetCaretPos(out var point) && !point.IsEmpty;
         }
     }
 }

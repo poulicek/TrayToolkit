@@ -1,6 +1,6 @@
 ﻿using System;
+using System.Drawing;
 using System.Runtime.InteropServices;
-using System.Security.Cryptography.X509Certificates;
 using System.Windows.Forms;
 
 namespace TrayToolkit.OS.Interops
@@ -198,5 +198,20 @@ namespace TrayToolkit.OS.Interops
 
         [DllImport("user32.dll")]
         public static extern bool SetCursorPos(int x, int y);
+
+        [DllImport("user32.dll")]
+        public static extern bool GetCaretPos(out Point lpPoint);
+
+        [DllImport("user32.dll")]
+        public static extern IntPtr GetFocus();
+
+        [DllImport("user32.dll")]
+        public static extern IntPtr GetForegroundWindow();
+
+        [DllImport("user32.dll", SetLastError = true)]
+        public static extern uint GetWindowThreadProcessId(IntPtr hWnd, out uint lpdwProcessId);
+
+        [DllImport("user32.dll")]
+        public static extern bool AttachThreadInput(uint idAttach, uint idAttachTo, bool fAttach);
     }
 }
