@@ -200,7 +200,7 @@ namespace TrayToolkit.OS.Interops
         public static extern bool SetCursorPos(int x, int y);
 
         [DllImport("user32.dll")]
-        public static extern bool GetCaretPos(out Point lpPoint);
+        public static extern bool GetCaretPos(ref Point lpPoint);
 
         [DllImport("user32.dll")]
         public static extern IntPtr GetFocus();

@@ -74,15 +74,5 @@ namespace TrayToolkit.Helpers
                     break;
             }
         }
-
-
-        [Obsolete("Seems not working for tray app")]
-        public static bool IsCaretFocused()
-        {
-            if (User32.GetFocus() == IntPtr.Zero)
-                User32.AttachThreadInput(User32.GetWindowThreadProcessId(User32.GetForegroundWindow(), out var id), Kernel32.GetCurrentThreadId(), true);
-
-            return User32.GetCaretPos(out var point) && !point.IsEmpty;
-        }
     }
 }
