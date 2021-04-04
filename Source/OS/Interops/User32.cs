@@ -213,5 +213,8 @@ namespace TrayToolkit.OS.Interops
 
         [DllImport("user32.dll")]
         public static extern bool AttachThreadInput(uint idAttach, uint idAttachTo, bool fAttach);
+
+        [DllImport("user32.dll")]
+        public static extern IntPtr GetDesktopWindow();
     }
 }

@@ -57,8 +57,10 @@
     <Compile Include="Helpers\IconHelper.cs" />
     <Compile Include="Helpers\INIFilesHelper.cs" />
     <Compile Include="Helpers\InputHelper.cs" />
+    <Compile Include="Helpers\SystemHelper.cs" />
     <Compile Include="Helpers\ThreadingHelper.cs" />
     <Compile Include="OS\Interops\Dxva2.cs" />
+    <Compile Include="OS\Interops\Gdi32.cs" />
     <Compile Include="OS\Interops\Kernel32.cs" />
     <Compile Include="OS\Interops\User32.cs" />
     <Compile Include="OS\Display\DisplayController.cs" />
