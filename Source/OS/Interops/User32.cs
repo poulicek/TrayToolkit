@@ -216,5 +216,11 @@ namespace TrayToolkit.OS.Interops
 
         [DllImport("user32.dll")]
         public static extern IntPtr GetDesktopWindow();
+
+        [DllImport("user32.dll")]
+        public static extern IntPtr GetWindowDC(IntPtr hWnd);
+
+        [DllImport("user32.dll")]
+        public static extern bool ReleaseDC(IntPtr hWnd, IntPtr hDC);
     }
 }

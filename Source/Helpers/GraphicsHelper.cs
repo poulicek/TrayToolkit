@@ -2,11 +2,21 @@
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Drawing.Text;
+using TrayToolkit.OS.Interops;
 
 namespace TrayToolkit.Helpers
 {
     public static class GraphicsHelper
     {
+        public static void SetQuality(this Graphics g, bool high)
+        {
+            if (high)
+                g.SetHighQuality();
+            else
+                g.SetLowQuality();
+        }
+
+
         public static void SetHighQuality(this Graphics g)
         {
             g.SmoothingMode = SmoothingMode.HighQuality;
