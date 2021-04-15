@@ -55,8 +55,12 @@ namespace TrayToolkit.Helpers
         /// </summary>
         public static string ReadString(this Stream s)
         {
-            using (var r = new StreamReader(s))
-                return r.ReadToEnd();
+            try
+            {
+                using (var r = new StreamReader(s))
+                    return r.ReadToEnd();
+            }
+            finally { s.Dispose(); }
         }
     }
 }
