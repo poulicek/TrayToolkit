@@ -15,8 +15,9 @@ namespace TrayToolkit.OS.Interops
             long bottom;
         }
 
-        public const uint KEYEVENTF_KEYUP = 0x0002;
         public const uint KEYEVENTF_EXTENDEDKEY = 0x0001;
+        public const uint KEYEVENTF_KEYUP = 0x0002;
+        
 
         public const int MOUSEEVENTF_LEFTDOWN = 0x02;
         public const int MOUSEEVENTF_LEFTUP = 0x04;
@@ -94,7 +95,7 @@ namespace TrayToolkit.OS.Interops
             public static INPUT GetVirtualKeyDown(Keys keyCode, ushort scanCode)
             {
                 var input = new INPUT() { type = INPUTTYPE.Keyboard };
-                input.u.ki = new KEYBDINPUT() { scanCode = scanCode, virtualKey = (ushort)keyCode, flags = scanCode > 0 ? KEYEVENTF.SCANCODE : 0 };
+                input.u.ki = new KEYBDINPUT() { scanCode = scanCode, virtualKey = (ushort)keyCode, flags = (scanCode > 0 ? KEYEVENTF.SCANCODE : 0) };
                 return input;
             }
 
@@ -222,5 +223,11 @@ namespace TrayToolkit.OS.Interops
 
         [DllImport("user32.dll")]
         public static extern bool ReleaseDC(IntPtr hWnd, IntPtr hDC);
+
+        [DllImport("user32.dll")]
+        public static extern short VkKeyScan(char ch);
+
+        [DllImport("user32.dll", SetLastError = false)]
+        public static extern IntPtr GetMessageExtraInfo();
     }
 }
