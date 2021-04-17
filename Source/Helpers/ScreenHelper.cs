@@ -8,7 +8,7 @@ namespace TrayToolkit.Helpers
     {
         public static Size GetScaledScreenSize()
         {
-            using (var g = Graphics.FromHwnd(User32.GetDesktopWindow()))
+            using (var g = Graphics.FromHwnd(IntPtr.Zero))
             {
                 var hdc = g.GetHdc();
                 return new Size(
