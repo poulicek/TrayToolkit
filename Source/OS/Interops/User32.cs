@@ -227,7 +227,10 @@ namespace TrayToolkit.OS.Interops
         [DllImport("user32.dll")]
         public static extern short VkKeyScan(char ch);
 
-        [DllImport("user32.dll", SetLastError = false)]
+        [DllImport("user32.dll")]
         public static extern IntPtr GetMessageExtraInfo();
+
+        [DllImport("User32.dll")]
+        public static extern int SetProcessDPIAware();
     }
 }

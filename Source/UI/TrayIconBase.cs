@@ -9,22 +9,21 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using Microsoft.Win32;
 using TrayToolkit.Helpers;
+using TrayToolkit.OS.Interops;
 
 namespace TrayToolkit.UI
 {
     public abstract class TrayIconBase : Form
     {
-        [DllImport("User32.dll")]
-        private static extern int SetProcessDPIAware();
-
         protected NotifyIcon trayIcon;
         private bool redrawRequested;
         private readonly string aboutUrl;
 
 
-        protected TrayIconBase(string title, string aboutUrl = null)
+        protected TrayIconBase(string title, string aboutUrl = null, bool dpiAwareness = true)
         {
-            SetProcessDPIAware();
+            if (dpiAwareness)
+                User32.SetProcessDPIAware();
 
             this.Text = title;
             this.aboutUrl = aboutUrl;
@@ -87,7 +86,6 @@ namespace TrayToolkit.UI
             if (this.trayIcon == null)
                 return;
 
-            SetProcessDPIAware();
             var oldIcon = this.trayIcon.Icon;
             this.trayIcon.Icon = this.getIcon();
             oldIcon?.Dispose();
