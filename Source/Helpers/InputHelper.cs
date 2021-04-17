@@ -90,9 +90,16 @@ namespace TrayToolkit.Helpers
         }
 
 
-        /// <summary>
-        /// Converts the given character to key code
-        /// </summary>
+        public static void MouseScroll(int x, int y)
+        {
+            if (x != 0)
+                User32.mouse_event(User32.MOUSEEVENTF_HWHEEL, 0, 0, -x, 0);
+
+            if (y != 0)
+                User32.mouse_event(User32.MOUSEEVENTF_WHEEL, 0, 0, y, 0);
+        }
+
+
         public static Keys CharToKey(char ch)
         {
             var vkey = User32.VkKeyScan(ch);
