@@ -67,6 +67,12 @@ namespace TrayToolkit.Helpers
         }
 
 
+        public static void SetCursorPosition(int x, int y)
+        {
+            User32.SetCursorPos(x, y);
+        }
+
+
         public static void MouseClick(int x, int y, MouseButton btn)
         {
             User32.SetCursorPos(x, y);
