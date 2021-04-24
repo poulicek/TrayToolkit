@@ -16,7 +16,6 @@ namespace TrayToolkit.Helpers
                 g.SetLowQuality();
         }
 
-
         public static void SetHighQuality(this Graphics g)
         {
             g.SmoothingMode = SmoothingMode.HighQuality;
@@ -36,6 +35,11 @@ namespace TrayToolkit.Helpers
         public static Size Ceiling(this SizeF s)
         {
             return new Size((int)Math.Ceiling(s.Width), (int)Math.Ceiling(s.Height));
+        }
+
+        public static Point GetCenter(this Rectangle r)
+        {
+            return new Point(r.X + r.Width / 2, r.Y + r.Height / 2);
         }
     }
 }
