@@ -36,26 +36,24 @@ namespace TrayToolkit.IO.Display.Driver
             try
             {                
                 var field = typeof(System.Windows.Forms.Screen).GetField("hmonitor", BindingFlags.NonPublic | BindingFlags.Instance);
-                if (field != null)
+
+                // enumerating the screens
+                foreach (var screen in System.Windows.Forms.Screen.AllScreens)
                 {
-                    // enumerating the screens
-                    foreach (var screen in System.Windows.Forms.Screen.AllScreens)
+                    var hMonitor = (IntPtr)field.GetValue(screen);
+
+                    // getting the number of monitors
+                    uint noOfMonitors = 0;
+                    if (Dxva2.GetNumberOfPhysicalMonitorsFromHMONITOR(hMonitor, ref noOfMonitors))
                     {
-                        var hMonitor = (IntPtr)field.GetValue(screen);
+                        // loading the monitor instances
+                        var screenMonitors = new Dxva2.PHYSICAL_MONITOR[noOfMonitors];
+                        Dxva2.GetPhysicalMonitorsFromHMONITOR(hMonitor, noOfMonitors, screenMonitors);
+                        monitors.AddRange(screenMonitors);
 
-                        // getting the number of monitors
-                        uint noOfMonitors = 0;
-                        if (Dxva2.GetNumberOfPhysicalMonitorsFromHMONITOR(hMonitor, ref noOfMonitors))
-                        {
-                            // loading the monitor instances
-                            var screenMonitors = new Dxva2.PHYSICAL_MONITOR[noOfMonitors];
-                            Dxva2.GetPhysicalMonitorsFromHMONITOR(hMonitor, noOfMonitors, screenMonitors);
-                            monitors.AddRange(screenMonitors);
-
-                            // setting the primary monitor
-                            if (screen.Primary && screenMonitors.Length > 0)
-                                primaryMonitor = screenMonitors[0];
-                        }
+                        // setting the primary monitor
+                        if (screen.Primary && screenMonitors.Length > 0)
+                            primaryMonitor = screenMonitors[0];
                     }
                 }
             }

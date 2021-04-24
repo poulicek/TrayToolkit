@@ -7,12 +7,13 @@ namespace TrayToolkit.OS.Interops
 {
     public static class User32
     {
+        [StructLayout(LayoutKind.Sequential)]
         public struct RECT
         {
-            long left;
-            long top;
-            long right;
-            long bottom;
+            public int Left;
+            public int Top;
+            public int Right;
+            public int Bottom;
         }
 
         public const uint KEYEVENTF_EXTENDEDKEY = 0x0001;
@@ -153,6 +154,18 @@ namespace TrayToolkit.OS.Interops
         }
 
 
+        [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
+        public struct MONITORINFOEX
+        {
+            public int Size;
+            public RECT Monitor;
+            public RECT WorkArea;
+            public uint Flags;
+            [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 32)]
+            public string DeviceName;
+        }
+
+
         public const int SW_SHOWNOACTIVATE = 4;
         public const uint SWP_NOACTIVATE = 0x10;
 
@@ -234,5 +247,11 @@ namespace TrayToolkit.OS.Interops
 
         [DllImport("User32.dll")]
         public static extern int SetProcessDPIAware();
+
+        [DllImport("user32.dll", CharSet = CharSet.Unicode)]
+        public static extern bool GetMonitorInfo(IntPtr hMonitor, ref MONITORINFOEX lpmi);
+
+        [DllImport("user32.dll")]
+        public static extern IntPtr WindowFromPoint(Point p);
     }
 }
