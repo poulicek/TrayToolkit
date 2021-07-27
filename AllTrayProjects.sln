@@ -13,6 +13,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Lockey", "..\Lockey\Source\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RemoteControl", "..\RemoteControl\Source\RemoteControl.csproj", "{55702462-E663-4A15-A74A-AA5FAB31BB96}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MediaSync", "..\MediaSync\Source\MediaSync.csproj", "{6983D1F9-8FF8-411C-8C73-D054C843C131}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -39,6 +41,10 @@ Global
 		{55702462-E663-4A15-A74A-AA5FAB31BB96}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{55702462-E663-4A15-A74A-AA5FAB31BB96}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{55702462-E663-4A15-A74A-AA5FAB31BB96}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6983D1F9-8FF8-411C-8C73-D054C843C131}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6983D1F9-8FF8-411C-8C73-D054C843C131}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6983D1F9-8FF8-411C-8C73-D054C843C131}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6983D1F9-8FF8-411C-8C73-D054C843C131}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

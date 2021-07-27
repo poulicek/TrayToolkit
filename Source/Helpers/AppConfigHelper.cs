@@ -56,12 +56,12 @@ namespace TrayToolkit.Helpers
 
         private static void load()
         {
-            cfg = INIFilesHelper.ReadFile(configPath);
+            cfg = IniHelper.ReadFile(configPath);
         }
 
         private static void save()
         {
-            INIFilesHelper.WriteFile(configPath, cfg);
+            IniHelper.WriteFile(configPath, cfg);
         }
     }
 }
