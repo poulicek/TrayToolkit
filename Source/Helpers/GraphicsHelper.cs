@@ -18,9 +18,9 @@ namespace TrayToolkit.Helpers
 
         public static void SetHighQuality(this Graphics g)
         {
-            g.SmoothingMode = SmoothingMode.HighQuality;
-            g.CompositingQuality = CompositingQuality.HighQuality;
             g.InterpolationMode = InterpolationMode.HighQualityBicubic;
+            g.SmoothingMode = SmoothingMode.HighSpeed;
+            g.CompositingQuality = CompositingQuality.HighSpeed;
             g.TextRenderingHint = TextRenderingHint.ClearTypeGridFit;
         }
 
