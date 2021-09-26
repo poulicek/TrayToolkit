@@ -55,7 +55,7 @@
     <Compile Include="Helpers\FileSystemHelper.cs" />
     <Compile Include="Helpers\GraphicsHelper.cs" />
     <Compile Include="Helpers\IconHelper.cs" />
-    <Compile Include="Helpers\INIFilesHelper.cs" />
+    <Compile Include="Helpers\IniHelper.cs" />
     <Compile Include="Helpers\InputHelper.cs" />
     <Compile Include="Helpers\ScreenHelper.cs" />
     <Compile Include="Helpers\ThreadingHelper.cs" />

@@ -6,14 +6,14 @@ using System.Web;
 
 namespace TrayToolkit.Helpers
 {
-    public static class INIFilesHelper
+    public static class IniHelper
     {
         /// <summary>
         /// Reads the INI file
         /// </summary>
         public static NameValueCollection ReadFile(string path)
         {
-            return File.Exists(path) ? parse(File.ReadAllText(path)) : new NameValueCollection();
+            return File.Exists(path) ? Parse(File.ReadAllText(path)) : new NameValueCollection();
         }
 
 
@@ -22,14 +22,14 @@ namespace TrayToolkit.Helpers
         /// </summary>
         public static void WriteFile(string path, NameValueCollection ini)
         {
-            File.WriteAllText(path, serialize(ini));
+            File.WriteAllText(path, Serialize(ini));
         }
 
 
         /// <summary>
         /// Parses the string
         /// </summary>
-        private static NameValueCollection parse(string ini)
+        public static NameValueCollection Parse(string ini)
         {
             // converting INI form to query string
             var query = (ini.Contains("\n") ? ini.Replace("&", "%26") : ini).Replace("\r", null).Replace("\n", "&");
@@ -55,7 +55,7 @@ namespace TrayToolkit.Helpers
         /// <summary>
         /// Serializes the data collection
         /// </summary>
-        private static string serialize(NameValueCollection ini)
+        public static string Serialize(NameValueCollection ini)
         {
             var sb = new StringBuilder();
             foreach (var key in ini.AllKeys)
