@@ -3,6 +3,7 @@ using System.IO;
 using System.Reflection;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using TrayToolkit.OS.Interops;
 
 namespace TrayToolkit.Helpers
 {
@@ -65,6 +66,16 @@ namespace TrayToolkit.Helpers
             }
 
             return true;
+        }
+
+
+        /// <summary>
+        /// Returns the size of the file on disk
+        /// </summary>
+        public static long GetDiskSize(this FileInfo file)
+        {
+            var losize = Kernel32.GetCompressedFileSizeW(file.FullName, out var hosize);
+            return (long)hosize << 32 | losize;
         }
     }
 }
