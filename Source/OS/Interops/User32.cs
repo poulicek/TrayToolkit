@@ -7,15 +7,6 @@ namespace TrayToolkit.OS.Interops
 {
     public static class User32
     {
-        [StructLayout(LayoutKind.Sequential)]
-        public struct RECT
-        {
-            public int Left;
-            public int Top;
-            public int Right;
-            public int Bottom;
-        }
-
         public const uint KEYEVENTF_EXTENDEDKEY = 0x0001;
         public const uint KEYEVENTF_KEYUP = 0x0002;
         
@@ -86,6 +77,40 @@ namespace TrayToolkit.OS.Interops
             KEYUP = 0x0002,
             SCANCODE = 0x0008,
             UNICODE = 0x0004
+        }
+
+
+        [StructLayout(LayoutKind.Sequential)]
+        public struct RECT
+        {
+            public int Left;
+            public int Top;
+            public int Right;
+            public int Bottom;
+        }
+
+
+        [StructLayout(LayoutKind.Sequential)]
+        public struct POINT
+        {
+            public int X;
+            public int Y;
+
+            public POINT(int x, int y)
+            {
+                this.X = x;
+                this.Y = y;
+            }
+
+            public static implicit operator System.Drawing.Point(POINT p)
+            {
+                return new System.Drawing.Point(p.X, p.Y);
+            }
+
+            public static implicit operator POINT(System.Drawing.Point p)
+            {
+                return new POINT(p.X, p.Y);
+            }
         }
 
 
@@ -214,6 +239,9 @@ namespace TrayToolkit.OS.Interops
 
         [DllImport("user32.dll")]
         public static extern bool SetCursorPos(int x, int y);
+
+        [DllImport("user32.dll", SetLastError = true)]
+        public static extern bool GetCursorPos(out POINT lpPoint);
 
         [DllImport("user32.dll")]
         public static extern bool GetCaretPos(ref Point lpPoint);

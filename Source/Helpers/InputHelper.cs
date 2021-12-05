@@ -72,6 +72,11 @@ namespace TrayToolkit.Helpers
             User32.SetCursorPos(x, y);
         }
 
+        public static Point GetCursorPosition()
+        {
+            return User32.GetCursorPos(out var pt) ? new Point(pt.X, pt.Y) : Point.Empty;
+        }
+
 
         public static void MouseClick(int x, int y, MouseButton btn)
         {
