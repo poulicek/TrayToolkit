@@ -41,5 +41,11 @@ namespace TrayToolkit.Helpers
         {
             return new Point(r.X + r.Width / 2, r.Y + r.Height / 2);
         }
+
+        public static Color SetAlphaChannel(this Color c, byte alpha)
+        {
+            int val = (alpha << 24) | (c.R << 16) | (c.G << 8) | c.B;
+            return Color.FromArgb(val);
+        }
     }
 }
