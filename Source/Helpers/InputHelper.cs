@@ -9,6 +9,7 @@ namespace TrayToolkit.Helpers
     public static class InputHelper
     {
         public enum MouseButton { Left = 1, Middle = 2, Right = 3 }
+        public enum MouseClickMode { Down = 1, Up = 2, Click = 3 }
 
         private static readonly int cbSize = Marshal.SizeOf(typeof(User32.INPUT));
 
@@ -72,32 +73,70 @@ namespace TrayToolkit.Helpers
             User32.SetCursorPos(x, y);
         }
 
+
         public static Point GetCursorPosition()
         {
             return User32.GetCursorPos(out var pt) ? new Point(pt.X, pt.Y) : Point.Empty;
         }
 
 
-        public static void MouseClick(int x, int y, MouseButton btn)
+        public static void MouseAction(MouseButton btn, Point pt, MouseClickMode mode)
         {
-            User32.SetCursorPos(x, y);
+            if (pt.IsEmpty)
+                pt = GetCursorPosition();
+            else
+                User32.SetCursorPos(pt.X, pt.Y);
+
             switch (btn)
             {
                 case MouseButton.Left:
-                    User32.mouse_event(User32.MOUSEEVENTF_LEFTDOWN, x, y, 0, 0);
-                    User32.mouse_event(User32.MOUSEEVENTF_LEFTUP, x, y, 0, 0);
+
+                    if (mode.HasFlag(MouseClickMode.Down))
+                        User32.mouse_event(User32.MOUSEEVENTF_LEFTDOWN, pt.X, pt.Y, 0, 0);
+
+                    if (mode.HasFlag(MouseClickMode.Up))
+                        User32.mouse_event(User32.MOUSEEVENTF_LEFTUP, pt.X, pt.Y, 0, 0);
+
                     break;
 
                 case MouseButton.Middle:
-                    User32.mouse_event(User32.MOUSEEVENTF_MIDDLEDOWN, x, y, 0, 0);
-                    User32.mouse_event(User32.MOUSEEVENTF_MIDDLEUP, x, y, 0, 0);
+                    
+                    if (mode.HasFlag(MouseClickMode.Down))
+                        User32.mouse_event(User32.MOUSEEVENTF_MIDDLEDOWN, pt.X, pt.Y, 0, 0);
+                    
+                    if (mode.HasFlag(MouseClickMode.Up))
+                        User32.mouse_event(User32.MOUSEEVENTF_MIDDLEUP, pt.X, pt.Y, 0, 0);
+                    
                     break;
 
                 case MouseButton.Right:
-                    User32.mouse_event(User32.MOUSEEVENTF_RIGHTDOWN, x, y, 0, 0);
-                    User32.mouse_event(User32.MOUSEEVENTF_RIGHTUP, x, y, 0, 0);
+                    
+                    if (mode.HasFlag(MouseClickMode.Down))
+                        User32.mouse_event(User32.MOUSEEVENTF_RIGHTDOWN, pt.X, pt.Y, 0, 0);
+                    
+                    if (mode.HasFlag(MouseClickMode.Up))
+                        User32.mouse_event(User32.MOUSEEVENTF_RIGHTUP, pt.X, pt.Y, 0, 0);
+
                     break;
             }
+        }
+
+
+        public static void MouseClick(MouseButton btn)
+        {
+            MouseAction(btn, Point.Empty, MouseClickMode.Click);
+        }
+
+
+        public static void MouseDown(MouseButton btn)
+        {
+            MouseAction(btn, Point.Empty, MouseClickMode.Down);
+        }
+
+
+        public static void MouseUp(MouseButton btn)
+        {
+            MouseAction(btn, Point.Empty, MouseClickMode.Up);
         }
 
 
