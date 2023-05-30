@@ -28,10 +28,13 @@ namespace TrayToolkit.IO.Display.Driver
         {
             try
             {
-                using (var mclass = new ManagementClass("WmiMonitorBrightnessMethods") { Scope = new ManagementScope(@"\\.\root\wmi") })
-                using (var mObjects = mclass.GetInstances())
-                    foreach (ManagementObject mObj in mObjects)
-                        mObj.InvokeMethod("WmiSetBrightness", new object[] { 0, brightness });
+                lock (this)
+                {
+                    using (var mclass = new ManagementClass("WmiMonitorBrightnessMethods") { Scope = new ManagementScope(@"\\.\root\wmi") })
+                    using (var mObjects = mclass.GetInstances())
+                        foreach (ManagementObject mObj in mObjects)
+                            mObj.InvokeMethod("WmiSetBrightness", new object[] { 0, brightness });
+                }
             }
             catch { }
         }
@@ -44,13 +47,16 @@ namespace TrayToolkit.IO.Display.Driver
         {
             try
             {
-                using (var searcher = new ManagementObjectSearcher(new ManagementScope("root\\WMI"), new SelectQuery("SELECT * FROM WmiMonitorBrightness")))
-                using (var mObjects = searcher.Get())
+                lock (this)
                 {
-                    foreach (var mObj in mObjects)
-                        foreach (var prop in mObj.Properties)
-                            if (prop.Name == "CurrentBrightness")
-                                return this.convertBrightnessValue((int)(byte)prop.Value);
+                    using (var searcher = new ManagementObjectSearcher(new ManagementScope("root\\WMI"), new SelectQuery("SELECT * FROM WmiMonitorBrightness")))
+                    using (var mObjects = searcher.Get())
+                    {
+                        foreach (var mObj in mObjects)
+                            foreach (var prop in mObj.Properties)
+                                if (prop.Name == "CurrentBrightness")
+                                    return this.convertBrightnessValue((int)(byte)prop.Value);
+                    }
                 }
             }
             catch { }

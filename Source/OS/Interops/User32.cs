@@ -42,29 +42,37 @@ namespace TrayToolkit.OS.Interops
 
 
         [StructLayout(LayoutKind.Sequential)]
-        public struct KeyboardHookStruct
+        public struct MSLLHOOKSTRUCT
         {
-            /// <summary>
-            /// Specifies a virtual-key code. The code must be a value in the range 1 to 254. 
-            /// </summary>
-            public int VirtualKeyCode;
-            /// <summary>
-            /// Specifies a hardware scan code for the key. 
-            /// </summary>
-            public int ScanCode;
-            /// <summary>
-            /// Specifies the extended-key flag, event-injected flag, context code, and transition-state flag.
-            /// </summary>
-            public int Flags;
-            /// <summary>
-            /// Specifies the Time stamp for this message.
-            /// </summary>
-            public int Time;
-            /// <summary>
-            /// Specifies extra information associated with the message. 
-            /// </summary>
-            public int ExtraInfo;
+            public POINT pt;
+            public uint mouseData;
+            public uint flags;
+            public uint time;
+            public IntPtr dwExtraInfo;
+
+            public int WheelDelta
+            {
+                get
+                {
+                    int v = (int)((mouseData & 0xFFFF0000) >> 16);
+                    if (v > SystemInformation.MouseWheelScrollDelta)
+                        v = v - (ushort.MaxValue + 1);
+                    return v;
+                }
+            }
         }
+
+
+        [StructLayout(LayoutKind.Sequential)]
+        public struct KBDLLHOOKSTRUCT
+        {
+            public uint vkCode;
+            public uint scanCode;
+            public uint flags;
+            public uint time;
+            public UIntPtr dwExtraInfo;
+        }
+
 
         public enum INPUTTYPE : uint
         {
@@ -197,17 +205,17 @@ namespace TrayToolkit.OS.Interops
         public delegate bool MonitorEnumDelegate(IntPtr hMonitor, IntPtr hdcMonitor, ref RECT lprcMonitor, IntPtr dwData);
         public delegate IntPtr LowLevelCallbackProc(int nCode, IntPtr wParam, IntPtr lParam);
 
-        [DllImport("User32.dll", SetLastError = true)]
+        [DllImport("User32.dll")]
         public static extern uint SendInput(int nInputs, [MarshalAs(UnmanagedType.LPArray), In] INPUT[] inputs, int cbSize);
 
-        [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
+        [DllImport("user32.dll", CharSet = CharSet.Auto)]
         public static extern IntPtr SetWindowsHookEx(int idHook, LowLevelCallbackProc lpfn, IntPtr hMod, uint dwThreadId);
 
-        [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
+        [DllImport("user32.dll", CharSet = CharSet.Auto)]
         [return: MarshalAs(UnmanagedType.Bool)]
         public static extern bool UnhookWindowsHookEx(IntPtr hhk);
 
-        [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
+        [DllImport("user32.dll", CharSet = CharSet.Auto)]
         public static extern IntPtr CallNextHookEx(IntPtr hhk, int nCode, IntPtr wParam, IntPtr lParam);
 
         [DllImport("user32.dll", CharSet = CharSet.Auto, CallingConvention = CallingConvention.StdCall)]
@@ -216,7 +224,7 @@ namespace TrayToolkit.OS.Interops
         [DllImport("user32.dll")]
         public static extern int SendMessage(int hWnd, int hMsg, int wParam, int lParam);
 
-        [DllImport("user32.dll", EntryPoint = "MonitorFromWindow", SetLastError = true)]
+        [DllImport("user32.dll", EntryPoint = "MonitorFromWindow")]
         public static extern IntPtr MonitorFromWindow([In] IntPtr hwnd, uint dwFlags);
 
         [DllImport("user32.dll")]
@@ -240,7 +248,7 @@ namespace TrayToolkit.OS.Interops
         [DllImport("user32.dll")]
         public static extern bool SetCursorPos(int x, int y);
 
-        [DllImport("user32.dll", SetLastError = true)]
+        [DllImport("user32.dll")]
         public static extern bool GetCursorPos(out POINT lpPoint);
 
         [DllImport("user32.dll")]
@@ -252,7 +260,7 @@ namespace TrayToolkit.OS.Interops
         [DllImport("user32.dll")]
         public static extern IntPtr GetForegroundWindow();
 
-        [DllImport("user32.dll", SetLastError = true)]
+        [DllImport("user32.dll")]
         public static extern uint GetWindowThreadProcessId(IntPtr hWnd, out uint lpdwProcessId);
 
         [DllImport("user32.dll")]

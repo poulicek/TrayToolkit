@@ -58,7 +58,7 @@ namespace TrayToolkit.OS.Display
         {
             try
             {
-                brightness = Math.Min(Math.Max(brightness, 0), 100);
+                brightness = Math.Min(Math.Max(brightness, this.Capabilities.Minimum), this.Capabilities.Maximum);
 
                 using (var monitors = new MonitorsCollector())
                     foreach (Dxva2.PHYSICAL_MONITOR m in monitors)

@@ -20,6 +20,15 @@ namespace TrayToolkit.UI
         private readonly string aboutUrl;
 
 
+        /// <summary>
+        /// Returns bounds of the try icon
+        /// </summary>
+        public Rectangle IconBounds
+        {
+            get { return trayIcon.GetNotifyIconBounds(); }
+        }
+
+
         protected TrayIconBase(string title, string aboutUrl = null, bool dpiAwareness = true)
         {
             if (dpiAwareness)
@@ -143,9 +152,9 @@ namespace TrayToolkit.UI
 
         #region Context Menu
 
-        /// <summary>
-        /// Creates the context menu
-        /// </summary>
+            /// <summary>
+            /// Creates the context menu
+            /// </summary>
         protected void createContextMenu()
         {
             this.trayIcon.ContextMenu = new ContextMenu(this.getContextMenuItems().ToArray());

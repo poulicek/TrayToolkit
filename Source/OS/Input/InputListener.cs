@@ -1,8 +1,10 @@
 ﻿using System;
+using System.Drawing;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
 using TrayToolkit.OS.Interops;
+using static TrayToolkit.OS.Interops.User32;
 
 namespace TrayToolkit.OS.Input
 {
@@ -21,25 +23,36 @@ namespace TrayToolkit.OS.Input
         public event Action<Keys> KeyPressed;
         public event Action<Keys> KeyReleased;
 
-        public bool BlockInput { get; private set; }
+        public event Action<Point, int> MouseWheel;
+
+        public bool BlockInput { get; set; }
 
 
         /// <summary>
         /// Sets the hooks for keyboard and mouse (depending on if input blocking is requested)
         /// </summary>
-        public void Listen(bool blockInput, params ActionKey[] actionKeys)
+        public void Listen(bool hookMouse, bool hookKeyboard, params ActionKey[] actionKeys)
         {
             this.Stop();
 
-            this.BlockInput = blockInput;
-            this.actionKeys = actionKeys;
-            var hModule = Marshal.GetHINSTANCE(Assembly.GetEntryAssembly().GetModules()[0]);
+            if (!hookMouse && !hookKeyboard)
+                return;
 
             // callbacks have their instance variables to prevent their destrcution by garbage collector
-            this.keyboardHookId = User32.SetWindowsHookEx(User32.WH_KEYBOARD_LL, this.keyboardCallback = new User32.LowLevelCallbackProc(this.keyboardHookCallback), hModule, 0);            
-            if (blockInput)
-                this.mouseHookId = User32.SetWindowsHookEx(User32.WH_MOUSE_LL, this.mouseCallback = new User32.LowLevelCallbackProc(this.mouseBlockingHookCallback), hModule, 0);
+
+            var hModule = Marshal.GetHINSTANCE(Assembly.GetEntryAssembly().GetModules()[0]);
+
+            if (hookMouse)
+                this.mouseHookId = User32.SetWindowsHookEx(User32.WH_MOUSE_LL, this.mouseCallback = new User32.LowLevelCallbackProc(this.mouseHookCallback), hModule, 0);
+
+            if (hookKeyboard)
+            {
+                
+                this.actionKeys = actionKeys;
+                this.keyboardHookId = User32.SetWindowsHookEx(User32.WH_KEYBOARD_LL, this.keyboardCallback = new User32.LowLevelCallbackProc(this.keyboardHookCallback), hModule, 0);
+            }            
         }
+
 
 
         /// <summary>
@@ -58,7 +71,6 @@ namespace TrayToolkit.OS.Input
 
             this.mouseCallback = null;
             this.keyboardCallback = null;
-            this.BlockInput = false;
         }
 
         #region Callbacks
@@ -66,16 +78,32 @@ namespace TrayToolkit.OS.Input
         /// <summary>
         /// Process the mouse events and always blocks them
         /// </summary>
-        private IntPtr mouseBlockingHookCallback(int nCode, IntPtr wParam, IntPtr lParam)
+        private IntPtr mouseHookCallback(int nCode, IntPtr wParam, IntPtr lParam)
         {
+
             try
             {
-                if (wParam == (IntPtr)User32.MouseMessages.WM_LBUTTONDOWN || wParam == (IntPtr)User32.MouseMessages.WM_RBUTTONDOWN)
-                    this.KeyBlocked?.Invoke();                
+                if (this.BlockInput)
+                {
+                    if (wParam == (IntPtr)User32.MouseMessages.WM_LBUTTONDOWN || wParam == (IntPtr)User32.MouseMessages.WM_RBUTTONDOWN)
+                        this.KeyBlocked?.Invoke();
+
+                    return new IntPtr(-1);
+                }
+                else
+                {
+                    if (wParam == (IntPtr)User32.MouseMessages.WM_MOUSEWHEEL)
+                    {
+                        var mouseData = (MSLLHOOKSTRUCT)Marshal.PtrToStructure(lParam, typeof(MSLLHOOKSTRUCT));
+                        this.MouseWheel?.Invoke(new Point(mouseData.pt.X, mouseData.pt.Y), mouseData.WheelDelta);
+                    }
+
+                    
+                }
             }
             catch { }
 
-            return new IntPtr(-1);
+            return User32.CallNextHookEx(this.keyboardHookId, nCode, wParam, lParam);   
         }
 
 
@@ -104,12 +132,15 @@ namespace TrayToolkit.OS.Input
                 }
 
                 // propagate event if input is not blocked or is a modifier
-                if (!this.BlockInput || this.isKeyModifier(key))
-                    return User32.CallNextHookEx(this.keyboardHookId, nCode, wParam, lParam);
+                if (this.BlockInput && !this.isKeyModifier(key))
+                {
+                    // inform about the blocked key
+                    if (isDown && this.lastKeyDown != key)
+                        this.KeyBlocked?.Invoke();
 
-                // inform about the blocked key
-                if (isDown && this.lastKeyDown != key)
-                    this.KeyBlocked?.Invoke();
+                    // blocking the input;
+                    return new IntPtr(-1);
+                }
             }
             catch { }
             finally
@@ -117,8 +148,7 @@ namespace TrayToolkit.OS.Input
                 this.lastKeyDown = isDown ? key : Keys.None;
             }
 
-            // blocking the input;
-            return new IntPtr(-1);
+            return User32.CallNextHookEx(this.keyboardHookId, nCode, wParam, lParam);
         }
 
         #endregion
@@ -139,7 +169,7 @@ namespace TrayToolkit.OS.Input
         /// </summary>
         private Keys getKey(IntPtr ptr)
         {
-            var key = (Keys)((User32.KeyboardHookStruct)Marshal.PtrToStructure(ptr, typeof(User32.KeyboardHookStruct))).VirtualKeyCode;
+            var key = (Keys)((User32.KBDLLHOOKSTRUCT)Marshal.PtrToStructure(ptr, typeof(User32.KBDLLHOOKSTRUCT))).vkCode;
             var res = key;
 
             if (isKeyModifier(key))
