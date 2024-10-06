@@ -11,6 +11,12 @@ namespace TrayToolkit.Helpers
         private static NameValueCollection cfg;
 
 
+        public static bool Exists()
+        {
+            return File.Exists(configPath);
+        }
+
+
         public static string Get(string key)
         {
             if (cfg == null)
