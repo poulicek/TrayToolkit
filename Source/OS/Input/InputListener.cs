@@ -80,6 +80,8 @@ namespace TrayToolkit.OS.Input
         /// </summary>
         private IntPtr mouseHookCallback(int nCode, IntPtr wParam, IntPtr lParam)
         {
+            if (nCode < 0)
+                return User32.CallNextHookEx(this.mouseHookId, nCode, wParam, lParam);
 
             try
             {
@@ -103,7 +105,7 @@ namespace TrayToolkit.OS.Input
             }
             catch { }
 
-            return User32.CallNextHookEx(this.keyboardHookId, nCode, wParam, lParam);   
+            return User32.CallNextHookEx(this.mouseHookId, nCode, wParam, lParam);
         }
 
 
@@ -112,6 +114,9 @@ namespace TrayToolkit.OS.Input
         /// </summary>
         private IntPtr keyboardHookCallback(int nCode, IntPtr wParam, IntPtr lParam)
         {
+            if (nCode < 0)
+                return User32.CallNextHookEx(this.keyboardHookId, nCode, wParam, lParam);
+
             var key = this.getKey(lParam);
             var isDown = (int)wParam == User32.WM_KEYDOWN || (int)wParam == User32.WM_SYSKEYDOWN;
 

@@ -19,6 +19,9 @@ namespace TrayToolkit.UI
         private bool redrawRequested;
         private readonly string aboutUrl;
 
+        // the window title changes (e.g. by the brightness), so it can't name the startup entry
+        private readonly string startupName;
+
 
         /// <summary>
         /// Returns bounds of the try icon
@@ -35,8 +38,8 @@ namespace TrayToolkit.UI
                 User32.SetProcessDPIAware();
 
             this.Text = title;
+            this.startupName = title;
             this.aboutUrl = aboutUrl;
-            BalloonTooltip.InitActivation();
         }
 
 
@@ -53,6 +56,9 @@ namespace TrayToolkit.UI
             SystemEvents.PaletteChanged += this.onDisplaySettingsChanged;
             SystemEvents.DisplaySettingsChanged += this.onDisplaySettingsChanged;
             SystemEvents.UserPreferenceChanging += this.onDisplaySettingsChanged;
+
+            // showing the empty balloon (which activates the tooltip) only after the tray icon is up
+            this.BeginInvoke((Action)BalloonTooltip.InitActivation);
         }
 
 
@@ -81,9 +87,12 @@ namespace TrayToolkit.UI
                 return;
 
             this.redrawRequested = true;
-            await Task.Delay(200);
-            this.updateLook();
-            this.redrawRequested = false;
+            try
+            {
+                await Task.Delay(200);
+                this.updateLook();
+            }
+            finally { this.redrawRequested = false; }
         }
 
 
@@ -106,7 +115,8 @@ namespace TrayToolkit.UI
         /// </summary>
         protected bool isWindowsInLightMode()
         {
-            return Registry.CurrentUser.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize", true)?.GetValue("SystemUsesLightTheme") as int? == 1;
+            using (var key = Registry.CurrentUser.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize", false))
+                return key?.GetValue("SystemUsesLightTheme") as int? == 1;
         }
 
 
@@ -215,7 +225,7 @@ namespace TrayToolkit.UI
         {
             try
             {
-                return Registry.CurrentUser.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", true).GetValue(this.Text) as string == Application.ExecutablePath.ToString();
+                return Registry.CurrentUser.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", true).GetValue(this.startupName) as string == Application.ExecutablePath.ToString();
             }
             catch { return false; }
         }
@@ -230,9 +240,9 @@ namespace TrayToolkit.UI
             {
                 var rk = Registry.CurrentUser.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", true);
                 if (set)
-                    rk.SetValue(this.Text, Application.ExecutablePath.ToString());
+                    rk.SetValue(this.startupName, Application.ExecutablePath.ToString());
                 else
-                    rk.DeleteValue(this.Text, false);
+                    rk.DeleteValue(this.startupName, false);
 
                 return set;
             }
@@ -269,6 +279,14 @@ namespace TrayToolkit.UI
             SystemEvents.PaletteChanged -= this.onDisplaySettingsChanged;
             SystemEvents.DisplaySettingsChanged -= this.onDisplaySettingsChanged;
             SystemEvents.UserPreferenceChanging -= this.onDisplaySettingsChanged;
+
+            if (disposing && this.trayIcon != null)
+            {
+                // hiding the icon explicitly, otherwise it lingers in the tray until the mouse hovers over it
+                this.trayIcon.Visible = false;
+                this.trayIcon.Dispose();
+                this.trayIcon = null;
+            }
 
             base.Dispose(disposing);
         }

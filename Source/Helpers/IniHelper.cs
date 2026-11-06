@@ -2,7 +2,6 @@
 using System.Collections.Specialized;
 using System.IO;
 using System.Text;
-using System.Web;
 
 namespace TrayToolkit.Helpers
 {
@@ -31,15 +30,19 @@ namespace TrayToolkit.Helpers
         /// </summary>
         public static NameValueCollection Parse(string ini)
         {
-            // converting INI form to query string
-            var query = (ini.Contains("\n") ? ini.Replace("&", "%26") : ini).Replace("\r", null).Replace("\n", "&");
-            var parsed = HttpUtility.ParseQueryString(query);
+            // a single line is treated as a query string (key=value&key=value), otherwise each line is a pair
+            var pairs = ini.Replace("\r", null).Split(ini.Contains("\n") ? '\n' : '&');
             var normalized = new NameValueCollection();
 
-            foreach (string key in parsed.Keys)
+            foreach (var pair in pairs)
             {
-                var k = key?.Trim();
-                var v = parsed[key]?.Trim().Trim(new char[] { '"', ',' });
+                // lines without the key are skipped
+                var index = pair.IndexOf('=');
+                if (index < 0)
+                    continue;
+
+                var k = decode(pair.Substring(0, index)).Trim();
+                var v = decode(pair.Substring(index + 1)).Trim().Trim(new char[] { '"', ',' });
 
                 // skipping the section names and comments
                 if (string.IsNullOrEmpty(k) || string.IsNullOrEmpty(v) || k.StartsWith(";") || k.StartsWith("["))
@@ -49,6 +52,15 @@ namespace TrayToolkit.Helpers
             }
 
             return normalized;
+        }
+
+
+        /// <summary>
+        /// Decodes the URL-encoded text the same way the query string parser does
+        /// </summary>
+        private static string decode(string text)
+        {
+            return Uri.UnescapeDataString(text.Replace('+', ' '));
         }
 
 
