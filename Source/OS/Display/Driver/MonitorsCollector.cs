@@ -18,6 +18,12 @@ namespace TrayToolkit.IO.Display.Driver
         public Dxva2.PHYSICAL_MONITOR Primary { get { return this.primaryMonitor; } }
 
 
+        /// <summary>
+        /// Returns all the monitors
+        /// </summary>
+        public Dxva2.PHYSICAL_MONITOR[] All { get { return this.monitors; } }
+
+
 
         public MonitorsCollector()
         {

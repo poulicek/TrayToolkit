@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using TrayToolkit.Helpers;
 using TrayToolkit.IO.Display.Driver;
 using TrayToolkit.OS.Interops;
@@ -12,18 +13,26 @@ namespace TrayToolkit.OS.Display
         {
             public short Minimum;
             public short Current;
-            public short Maximum;            
+            public short Maximum;
         }
 
         public event Action<int> BrightnessChanged;
 
-
         private readonly WMI wmiDriver = new WMI();
 
+        // reading the value from the monitor takes ~60 ms (DDC/CI), so it is cached and refreshed on demand
+        private volatile int cachedValue = -1;
+
         /// <summary>
-        /// Returns the current brightness value
+        /// Returns the last known brightness value (0 if unknown, see <see cref="IsValueKnown"/>)
         /// </summary>
-        public int CurrentValue { get { return this.getCurrentValue(); } }
+        public int CurrentValue { get { return Math.Max(this.cachedValue, 0); } }
+
+
+        /// <summary>
+        /// Returns true if the brightness was successfully read from the display
+        /// </summary>
+        public bool IsValueKnown { get { return this.cachedValue >= 0; } }
 
 
         /// <summary>
@@ -35,8 +44,25 @@ namespace TrayToolkit.OS.Display
 
         public DisplayController()
         {
-            this.wmiDriver.BrightnessChanged += (level) => this.BrightnessChanged?.Invoke(level);
-            this.Capabilities = this.getCapabilities();
+            this.wmiDriver.BrightnessChanged += this.onWmiBrightnessChanged;
+
+            bool isRead;
+            this.Capabilities = this.readCapabilities(out isRead);
+
+            if (isRead)
+            {
+                this.cachedValue = Math.Min(100, (int)this.Capabilities.Current);
+
+                // looking for the built-in panel without delaying the startup
+                ThreadingHelper.DoAsync(() => this.wmiDriver.Start());
+            }
+            else
+            {
+                // no DDC/CI (e.g. a laptop panel)
+                var value = this.wmiDriver.Start();
+                if (value >= 0)
+                    this.cachedValue = Math.Min(100, value);
+            }
         }
 
 
@@ -52,6 +78,32 @@ namespace TrayToolkit.OS.Display
         #region Interface
 
         /// <summary>
+        /// Reads the brightness from the display. Returns false (keeping the last known value) when the read fails.
+        /// </summary>
+        public bool Refresh()
+        {
+            bool isRead;
+            var value = this.readCapabilities(out isRead).Current;
+
+            if (!isRead)
+                value = -1;
+
+            if (value <= 0 && this.wmiDriver.IsAvailable)
+            {
+                var panelValue = this.wmiDriver.GetBrightness();
+                if (panelValue >= 0)
+                    value = (short)panelValue;
+            }
+
+            if (value < 0)
+                return false;
+
+            this.cachedValue = Math.Min(100, (int)value);
+            return true;
+        }
+
+
+        /// <summary>
         /// Sets the brightness level
         /// </summary>
         public bool SetBrightness(int brightness)
@@ -61,10 +113,17 @@ namespace TrayToolkit.OS.Display
                 brightness = Math.Min(Math.Max(brightness, this.Capabilities.Minimum), this.Capabilities.Maximum);
 
                 using (var monitors = new MonitorsCollector())
-                    foreach (Dxva2.PHYSICAL_MONITOR m in monitors)
-                        Dxva2.SetMonitorBrightness(m.hPhysicalMonitor, (short)brightness);
+                {
+                    var all = monitors.All;
+                    if (all.Length > 1)
+                        Parallel.ForEach(all, m => Dxva2.SetMonitorBrightness(m.hPhysicalMonitor, (short)brightness));
+                    else
+                        foreach (var m in all)
+                            Dxva2.SetMonitorBrightness(m.hPhysicalMonitor, (short)brightness);
+                }
 
                 this.wmiDriver.SetBrightness(brightness);
+                this.cachedValue = brightness;
                 return true;
             }
             catch { }
@@ -114,28 +173,26 @@ namespace TrayToolkit.OS.Display
         #region Helpers
 
         /// <summary>
-        /// Returns the initial value
+        /// Handles the brightness change of the built-in panel (e.g. by the keyboard keys)
         /// </summary>
-        private int getCurrentValue()
+        private void onWmiBrightnessChanged(int level)
         {
-            var value = (int)this.getCapabilities().Current;
-            if (value <= 0)
-                value = this.wmiDriver.GetBrightness();
-
-            return Math.Min(100, Math.Max(value, 0));
+            this.cachedValue = Math.Min(100, level);
+            this.BrightnessChanged?.Invoke(level);
         }
 
 
         /// <summary>
         /// Returns the capabilities of the monitor
         /// </summary>
-        private BrightnessInfo getCapabilities()
+        private BrightnessInfo readCapabilities(out bool isRead)
         {
+            isRead = false;
             var info = new BrightnessInfo();
             try
             {
                 using (var monitors = new MonitorsCollector())
-                    Dxva2.GetMonitorBrightness(monitors.Primary.hPhysicalMonitor, ref info.Minimum, ref info.Current, ref info.Maximum);
+                    isRead = Dxva2.GetMonitorBrightness(monitors.Primary.hPhysicalMonitor, ref info.Minimum, ref info.Current, ref info.Maximum);
 
                 info.Minimum = 0;
                 info.Maximum = 100;

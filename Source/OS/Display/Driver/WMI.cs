@@ -3,21 +3,42 @@ using System.Management;
 
 namespace TrayToolkit.IO.Display.Driver
 {
+    /// <summary>
+    /// Brightness access for built-in (laptop) panels. Desktops with external monitors have no such panel,
+    /// so nothing is subscribed or queried unless <see cref="Start"/> finds one.
+    /// </summary>
     internal class WMI : IDisposable
     {
-        private readonly ManagementEventWatcher watcher;
+        private ManagementEventWatcher watcher;
 
         public event Action<int> BrightnessChanged;
 
+        /// <summary>
+        /// Returns true when a built-in panel was found by <see cref="Start"/>
+        /// </summary>
+        public bool IsAvailable { get; private set; }
 
-        public WMI()
+
+        /// <summary>
+        /// Looks for a built-in panel and starts listening for its brightness changes.
+        /// Returns the current panel brightness or -1 if there is none.
+        /// </summary>
+        public int Start()
         {
+            var brightness = this.GetBrightness();
+            if (brightness < 0)
+                return -1;
+
+            this.IsAvailable = true;
+
             try
             {
                 this.watcher = this.createWatcher();
                 this.watcher.Start();
             }
             catch { }
+
+            return brightness;
         }
 
 
@@ -26,6 +47,9 @@ namespace TrayToolkit.IO.Display.Driver
         /// </summary>
         public void SetBrightness(int brightness)
         {
+            if (!this.IsAvailable)
+                return;
+
             try
             {
                 lock (this)
@@ -55,7 +79,7 @@ namespace TrayToolkit.IO.Display.Driver
                         foreach (var mObj in mObjects)
                             foreach (var prop in mObj.Properties)
                                 if (prop.Name == "CurrentBrightness")
-                                    return this.convertBrightnessValue((int)(byte)prop.Value);
+                                    return (int)(byte)prop.Value;
                     }
                 }
             }
@@ -81,23 +105,12 @@ namespace TrayToolkit.IO.Display.Driver
         }
 
 
-
         /// <summary>
         /// Handles the WMI event
         /// </summary>
         private void onWMIEvent(object sender, EventArrivedEventArgs e)
         {
-            this.BrightnessChanged?.Invoke(this.convertBrightnessValue((int)(byte)e.NewEvent.Properties["Brightness"].Value));
-        }
-
-
-        /// <summary>
-        /// Converts the brightness value to match the full range
-        /// </summary>
-        private int convertBrightnessValue(int b)
-        {
-            return b;
-            return (int)Math.Ceiling(100 * b / 48.0);
+            this.BrightnessChanged?.Invoke((int)(byte)e.NewEvent.Properties["Brightness"].Value);
         }
 
 
