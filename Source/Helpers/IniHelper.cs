@@ -71,7 +71,7 @@ namespace TrayToolkit.Helpers
         {
             var sb = new StringBuilder();
             foreach (var key in ini.AllKeys)
-                sb.AppendFormat("{0} = {1}{2}", key, ini[key], Environment.NewLine);
+                sb.AppendFormat("{0} = {1}{2}", key, ini[key].Replace("%", "%25").Replace("+", "%2B"), Environment.NewLine);
             return sb.ToString();
         }
     }
